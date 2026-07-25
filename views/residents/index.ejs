@@ -1,0 +1,176 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="apple-bg-ambient">
+<div class="directory-wrapper">
+    <div class="container-xl px-3 px-md-4 pb-5">
+        
+        <!-- Header & Advanced Filters Toggle -->
+        <div class="premium-glass-card mb-4 p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="mb-1 fw-bold text-dark" style="font-family: 'Fraunces', serif;">Global Resident Directory</h2>
+                <p class="text-muted small mb-0 fw-medium">Search and manage all registered citizens under jurisdiction.</p>
+            </div>
+            <button class="btn btn-ios-outline rounded-pill px-4 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                <i class="fas fa-filter me-2 text-primary"></i> Advanced Filters
+            </button>
+        </div>
+
+        <!-- Advanced Filter & Search Panel -->
+        <div class="collapse <%= (typeof search !== 'undefined' || typeof gender !== 'undefined' || typeof occupation !== 'undefined') ? 'show' : '' %> mb-4" id="filterPanel">
+            <div class="premium-glass-card p-4">
+                <form method="GET" action="/residents">
+                    <!-- Search Bar -->
+                    <div class="mb-3">
+                        <label class="fw-bold small text-muted mb-2">Deep Search</label>
+                        <div class="input-group shadow-sm ios-input-group">
+                            <span class="input-group-text bg-white border-end-0 ps-3"><i class="fas fa-search text-primary"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0 ps-2" placeholder="Search by Name, Mobile, EPIC, Booth No, or Roll Serial..." value="<%= typeof search !== 'undefined' ? search : '' %>">
+                        </div>
+                    </div>
+                                         
+                    <!-- Filters -->
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="fw-bold small text-muted mb-1">Gender</label>
+                            <select name="gender" class="form-select ios-input shadow-none">
+                                <option value="">All Genders</option>
+                                <option value="Male" <%= (typeof gender !== 'undefined' && gender === 'Male') ? 'selected' : '' %>>Male</option>
+                                <option value="Female" <%= (typeof gender !== 'undefined' && gender === 'Female') ? 'selected' : '' %>>Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="fw-bold small text-muted mb-1">Voter Status</label>
+                            <select name="voterStatus" class="form-select ios-input shadow-none">
+                                <option value="">All Statuses</option>
+                                <option value="yes" <%= (typeof voterStatus !== 'undefined' && voterStatus === 'yes') ? 'selected' : '' %>>Has Voter ID</option>
+                                <option value="no" <%= (typeof voterStatus !== 'undefined' && voterStatus === 'no') ? 'selected' : '' %>>No Voter ID</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="fw-bold small text-muted mb-1">Occupation</label>
+                            <select name="occupation" class="form-select ios-input shadow-none">
+                                <option value="">All Occupations</option>
+                                <option value="Salaried Employee" <%= (typeof occupation !== 'undefined' && occupation === 'Salaried Employee') ? 'selected' : '' %>>Salaried Employee</option>
+                                <option value="Business" <%= (typeof occupation !== 'undefined' && occupation === 'Business') ? 'selected' : '' %>>Business</option>
+                                <option value="Student" <%= (typeof occupation !== 'undefined' && occupation === 'Student') ? 'selected' : '' %>>Student</option>
+                                <option value="Housewife" <%= (typeof occupation !== 'undefined' && occupation === 'Housewife') ? 'selected' : '' %>>Housewife</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-ios-solid w-100 fw-bold shadow-sm">Apply Filters</button>
+                            <a href="/residents" class="btn btn-ios-outline px-3 shadow-sm" title="Clear Filters"><i class="fas fa-sync-alt"></i></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="premium-glass-card p-0 overflow-hidden shadow-sm">
+            <div class="table-responsive mb-0">
+                <table class="table table-hover align-middle mb-0 custom-glass-table">
+                    <thead class="bg-white bg-opacity-50 border-bottom">
+                        <tr>
+                            <th class="ps-4 py-3 text-muted small fw-semibold text-uppercase">Resident Name</th>
+                            <th class="py-3 text-muted small fw-semibold text-uppercase">Demographics</th>
+                            <th class="py-3 text-muted small fw-semibold text-uppercase">Family ID</th>
+                            <th class="py-3 text-muted small fw-semibold text-uppercase">Civic Details</th>
+                            <th class="text-end pe-4 py-3 text-muted small fw-semibold text-uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (residents && residents.length > 0) { %>
+                            <% residents.forEach(resident => { %>
+                            <tr onclick="window.location='/residents/<%= resident._id %>'" style="cursor: pointer;" class="glass-table-row">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-glass bg-info bg-opacity-10 text-info rounded-circle d-flex justify-content-center align-items-center me-3 fw-bold" style="width: 40px; height: 40px; min-width: 40px;">
+                                            <%= resident.fullName.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <strong class="d-block text-dark"><%= resident.fullName %></strong>
+                                            <small class="text-muted"><i class="fas fa-phone-alt me-1 text-success"></i> <%= resident.mobile %></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="d-block text-dark fw-medium"><%= resident.age %> Yrs, <%= resident.gender %></span>
+                                    <span class="badge border border-danger text-danger mt-1 bg-danger bg-opacity-10"><%= resident.bloodGroup || 'Unknown' %></span>
+                                </td>
+                                <td class="py-3">
+                                    <% if (resident.familyId) { %>
+                                        <a href="/families/<%= resident.familyId._id %>" class="badge bg-white text-primary border border-primary-subtle text-decoration-none shadow-sm px-2 py-1">
+                                            <%= resident.familyId.familyId %>
+                                        </a><br>
+                                        <small class="text-muted"><%= resident.relationship %></small>
+                                    <% } else { %>
+                                        <span class="text-muted small">Independent</span>
+                                    <% } %>
+                                </td>
+                                <td class="py-3">
+                                    <% if (resident.hasVoterId) { %>
+                                        <span class="d-block small fw-bold text-dark">EPIC: <%= resident.epicNumber || 'N/A' %></span>
+                                        <small class="text-muted">Booth: <%= resident.boothPartNumber || '-' %> | Roll: <%= resident.rollSerialNumber || '-' %></small>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border">No Voter ID</span>
+                                    <% } %>
+                                </td>
+                                <td class="text-end pe-4 py-3">
+                                    <a href="/residents/<%= resident._id %>" class="btn btn-sm btn-ios-outline rounded-pill px-3 shadow-sm">View</a>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="fas fa-users-slash fs-1 text-light mb-3 opacity-50"></i>
+                                    <h5>No residents match your search criteria.</h5>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+    .apple-bg-ambient {
+        min-height: 100vh;
+        background-color: #f4f6f9;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
+        background-attachment: fixed;
+    }
+    .directory-wrapper { padding-top: 6.5rem; }
+    @media (max-width: 767.98px) { .directory-wrapper { padding-top: 5.2rem; } }
+
+    .premium-glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,1);
+    }
+    
+    .ios-input-group { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; }
+    .ios-input-group .form-control { border: none; box-shadow: none; padding: 0.75rem 1rem; }
+    .ios-input { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 0.65rem 1rem; font-size: 0.95rem; }
+    .ios-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+
+    .custom-glass-table { border-collapse: separate; border-spacing: 0; }
+    .glass-table-row { background: rgba(255,255,255,0.4); transition: background 0.2s; }
+    .glass-table-row:hover { background: rgba(255,255,255,0.9); }
+
+    .btn-ios-outline { background: rgba(255,255,255,0.8); border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; transition: all 0.2s; }
+    .btn-ios-outline:hover { background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .btn-ios-solid { background: #4f46e5; color: #ffffff; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(79,70,229,0.3); transition: all 0.2s; }
+    .btn-ios-solid:hover { background: #4338ca; color: #ffffff; box-shadow: 0 6px 20px rgba(79,70,229,0.4); }
+</style>
+
+<%- include('../partials/footer') %>

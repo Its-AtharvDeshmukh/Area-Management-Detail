@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Welcome to Dattaham Nagar Family</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mapbox GL JS CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --civic-navy: #0f2a4a;
+            --civic-brass: #b8862e;
+            --civic-slate: #94a3b8;
+            --civic-emerald: #34d399;
+        }
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; 
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* ======================================================== */
+        /* MAPBOX BACKGROUND & OVERLAYS                             */
+        /* ======================================================== */
+        #mapBackground {
+            position: fixed !important;
+            top: 0; right: 0; bottom: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1 !important; 
+            pointer-events: none;
+        }
+        .map-vignette-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at center, rgba(15,42,74,0.4) 0%, rgba(3, 7, 18, 0.96) 100%),
+                linear-gradient(180deg, rgba(184,134,59,0.08) 0%, transparent 40%);
+            z-index: 2 !important; 
+            pointer-events: none;
+        }
+
+        /* Elevate the Globe Minimap to sit exactly above the horizontal marquee */
+        .mapboxgl-ctrl-bottom-right {
+            bottom: 85px !important; 
+            right: 15px !important;
+            z-index: 1050 !important; 
+        }
+
+        /* Minimalist Transparent Navbar */
+        .minimal-navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: transparent !important;
+            z-index: 1080;
+            padding: 1.25rem 0;
+            transition: background 0.3s ease, backdrop-filter 0.3s ease;
+        }
+        .minimal-navbar.scrolled {
+            background: rgba(3, 7, 18, 0.85) !important;
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .brand-logo-seal {
+            width: 42px; height: 42px; border-radius: 12px;
+            background: linear-gradient(135deg, rgba(15,42,74,0.9) 0%, rgba(10,31,56,0.95) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(184,134,59,0.35);
+            color: var(--civic-brass);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; flex-shrink: 0;
+        }
+
+        /* Action Buttons */
+        .btn-glass-login {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff; font-weight: 600; font-size: 0.88rem;
+            padding: 0.55rem 1.4rem; border-radius: 50px;
+            transition: all 0.2s ease; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 42px; white-space: nowrap;
+        }
+        .btn-glass-login:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            border-color: #ffffff;
+        }
+        .btn-solid-register {
+            background: linear-gradient(135deg, var(--civic-brass) 0%, #96682a 100%);
+            color: #030712; font-weight: 700; font-size: 0.88rem;
+            padding: 0.55rem 1.5rem; border-radius: 50px; border: none;
+            box-shadow: 0 4px 20px rgba(184, 134, 59, 0.35);
+            transition: all 0.2s ease; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 42px; white-space: nowrap;
+        }
+        .btn-solid-register:hover {
+            color: #030712; transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(184, 134, 59, 0.45);
+        }
+
+        /* Hero Content */
+        .hero-section {
+            min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center;
+            padding: 7rem 1.25rem 9rem 1.25rem;
+            position: relative; 
+            z-index: 10; 
+        }
+        .hero-tag {
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.14em; color: var(--civic-brass);
+            background: rgba(184, 134, 59, 0.15);
+            border: 1px solid rgba(184, 134, 59, 0.4);
+            padding: 0.4rem 1.1rem; border-radius: 50px;
+            display: inline-block; margin-bottom: 1.5rem;
+        }
+        .hero-title {
+            font-family: 'Fraunces', serif;
+            font-size: clamp(2.1rem, 6vw, 4.2rem);
+            font-weight: 600; letter-spacing: -0.03em;
+            color: #ffffff; margin-bottom: 1.1rem;
+            line-height: 1.15;
+            text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+        }
+        .hero-subtitle {
+            font-size: clamp(0.95rem, 2vw, 1.15rem);
+            color: #cbd5e1; max-width: 600px;
+            margin: 0 auto 2.25rem auto; font-weight: 500;
+            line-height: 1.65;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Horizontal Auto-Scrolling Marquee Ticker */
+        .marquee-container {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(3, 7, 18, 0.88);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-top: 1px solid rgba(184,134,59,0.2);
+            padding: 0.9rem 0;
+            overflow: hidden;
+            z-index: 1070;
+        }
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: scrollMarquee 32s linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+        @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0 1.75rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .marquee-icon {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.95rem; flex-shrink: 0;
+        }
+        .marquee-num {
+            font-family: 'Fraunces', serif;
+            font-size: 1.3rem; font-weight: 600; color: #ffffff;
+            line-height: 1.1;
+        }
+        .marquee-label {
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.09em; color: var(--civic-slate);
+        }
+
+        .icon-navy { background: rgba(15,42,74,0.5); color: #8fb4dd; }
+        .icon-brass { background: rgba(184,134,59,0.3); color: var(--civic-brass); }
+        .icon-emerald { background: rgba(52,211,153,0.15); color: var(--civic-emerald); }
+
+        @media (max-width: 575.98px) {
+            .minimal-navbar { padding: 1rem 0; }
+            .hero-section { padding: 6rem 1rem 8.5rem 1rem; }
+            .hero-tag { font-size: 0.62rem; padding: 0.35rem 0.9rem; }
+            .btn-glass-login, .btn-solid-register { font-size: 0.82rem; padding: 0.5rem 1.1rem; }
+            .cta-row .btn-solid-register, .cta-row .btn-glass-login { width: 100%; }
+            .marquee-item { gap: 0.6rem; padding: 0 1.15rem; }
+            .marquee-icon { width: 28px; height: 28px; font-size: 0.8rem; }
+            .marquee-num { font-size: 1.05rem; }
+            .marquee-label { font-size: 0.55rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Interactive Mapbox Background Container -->
+    <div id="mapBackground"></div>
+    <div class="map-vignette-overlay"></div>
+
+    <!-- Transparent Minimalist Navbar -->
+    <nav class="minimal-navbar" id="mainNav">
+        <div class="container d-flex justify-content-between align-items-center px-3 px-md-4">
+            <a class="d-flex align-items-center gap-2 text-decoration-none" href="/">
+                <div class="brand-logo-seal shadow-sm">
+                    <i class="fas fa-city"></i>
+                </div>
+                <div class="d-flex flex-column leading-tight d-none d-sm-flex">
+                    <span class="fw-semibold text-white" style="font-family: 'Fraunces', serif; font-size: 0.98rem;">Dattaham Nagar</span>
+                    <span class="text-white-50 fw-semibold" style="font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.08em;">Family Directory</span>
+                </div>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="/login" class="btn-glass-login">Sign In</a>
+                <a href="/register" class="btn-solid-register">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero & Welcome Section -->
+    <main class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <span class="hero-tag">Official Community Portal</span>
+                    <h1 class="hero-title">Welcome to Dattaham Nagar Family.</h1>
+                    <p class="hero-subtitle">
+                        If you are a resident, please register yourself below to connect with your municipal jurisdiction, access household records, and view real-time community statistics.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap cta-row">
+                        <a href="/register" class="btn-solid-register px-5 py-3 fs-6">
+                            <i class="fas fa-user-plus me-2"></i> Register Yourself Now
+                        </a>
+                        <a href="/login" class="btn-glass-login px-5 py-3 fs-6">
+                            <i class="fas fa-sign-in-alt me-2"></i> Resident Portal Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Seamless Auto-Scrolling Horizontal Marquee Ticker -->
+    <div class="marquee-container">
+        <div class="marquee-track">
+            <!-- Set 1 -->
+            <div class="marquee-item"><span class="marquee-icon icon-navy"><i class="fas fa-home"></i></span><div><div class="marquee-num"><%= totalFamilies || 0 %></div><div class="marquee-label">Families</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-emerald"><i class="fas fa-users"></i></span><div><div class="marquee-num"><%= totalResidents || 0 %></div><div class="marquee-label">Residents</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-navy"><i class="fas fa-mars"></i></span><div><div class="marquee-num"><%= totalMales || 0 %></div><div class="marquee-label">Males</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-brass"><i class="fas fa-venus"></i></span><div><div class="marquee-num"><%= totalFemales || 0 %></div><div class="marquee-label">Females</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-emerald"><i class="fas fa-child"></i></span><div><div class="marquee-num"><%= childrenCount || 0 %></div><div class="marquee-label">Children (0-15)</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-navy"><i class="fas fa-user-tie"></i></span><div><div class="marquee-num"><%= adultsCount || 0 %></div><div class="marquee-label">Adults (16-59)</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-brass"><i class="fas fa-user-clock"></i></span><div><div class="marquee-num"><%= seniorsCount || 0 %></div><div class="marquee-label">Seniors (60+)</div></div></div>
+            
+            <!-- Set 2 (Duplicate for infinite loop) -->
+            <div class="marquee-item"><span class="marquee-icon icon-navy"><i class="fas fa-home"></i></span><div><div class="marquee-num"><%= totalFamilies || 0 %></div><div class="marquee-label">Families</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-emerald"><i class="fas fa-users"></i></span><div><div class="marquee-num"><%= totalResidents || 0 %></div><div class="marquee-label">Residents</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-navy"><i class="fas fa-mars"></i></span><div><div class="marquee-num"><%= totalMales || 0 %></div><div class="marquee-label">Males</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-brass"><i class="fas fa-venus"></i></span><div><div class="marquee-num"><%= totalFemales || 0 %></div><div class="marquee-label">Females</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-emerald"><i class="fas fa-child"></i></span><div><div class="marquee-num"><%= childrenCount || 0 %></div><div class="marquee-label">Children (0-15)</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-navy"><i class="fas fa-user-tie"></i></span><div><div class="marquee-num"><%= adultsCount || 0 %></div><div class="marquee-label">Adults (16-59)</div></div></div>
+            <div class="marquee-item"><span class="marquee-icon icon-brass"><i class="fas fa-user-clock"></i></span><div><div class="marquee-num"><%= seniorsCount || 0 %></div><div class="marquee-label">Seniors (60+)</div></div></div>
+        </div>
+    </div>
+
+    <!-- Mapbox GL JS & Globe Plugin Script -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mapbox-gl-globe-minimap@1.2.0/dist/bundle.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            mapboxgl.accessToken = '<%= mapToken %>';
+            
+            // 1. Initialize Map looking at Earth from far away
+            const bgMap = new mapboxgl.Map({
+                container: 'mapBackground',
+                style: 'mapbox://styles/mapbox/navigation-night-v1', // High-contrast night theme
+                center: [79.1105, 5.0], // Start far out over the Earth
+                zoom: 1.5, // Earth level zoom
+                pitch: 0,
+                interactive: false,
+                attributionControl: false
+            });
+
+            bgMap.on('load', () => {
+                bgMap.resize();
+                
+                // 2. Add the spinning Globe Minimap Control
+                // Customizing colors to match your Civic Navy & Brass theme
+                bgMap.addControl(
+                    new GlobeMinimap({
+                        landColor: '#0f2a4a', 
+                        waterColor: 'rgba(3, 7, 18, 0.9)', 
+                        markerColor: '#b8862e',
+                        globeSize: 85
+                    }), 
+                    'bottom-right'
+                );
+
+                // 3. Start the majestic fly-in animation to Besa Pipla Road
+                setTimeout(() => {
+                    bgMap.flyTo({
+                        center: [79.1105, 21.0910], // Exact coordinates for Besa Pipla Road, Nagpur
+                        zoom: 14.8, 
+                        pitch: 55, // Tilt the camera 55 degrees for a beautiful 3D perspective
+                        bearing: -20, 
+                        speed: 0.7, // Smooth, cinematic flying speed
+                        curve: 1.4, // Arc of the flight path
+                        essential: true 
+                    });
+                }, 800); // Wait 800ms after load so the user registers the Earth first
+            });
+
+            window.addEventListener('resize', () => {
+                bgMap.resize();
+            });
+        });
+
+        // Scroll listener to fade navbar background
+        const navEl = document.getElementById('mainNav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 30) {
+                navEl.classList.add('scrolled');
+            } else {
+                navEl.classList.remove('scrolled');
+            }
+        });
+    </script>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

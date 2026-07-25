@@ -1,0 +1,131 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0"><i class="fas fa-home"></i> Register New Family</h5>
+                    <a href="/families" class="btn btn-sm btn-light text-primary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form action="/families/add" method="POST">
+                        
+                        <!-- Basic Details -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="headOfFamily" class="form-label fw-bold">Head of Family Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="headOfFamily" name="headOfFamily" required placeholder="Enter full name">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="mobile" class="form-label fw-bold">Mobile Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="mobile" name="mobile" required pattern="[0-9]{10}" placeholder="10-digit mobile number">
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label for="headOccupation" class="form-label fw-bold">Occupation (Head)</label>
+                                <input type="text" class="form-control" id="headOccupation" name="headOccupation" placeholder="e.g., Teacher, Business, Farmer">
+                            </div>
+                        </div>
+
+                        <hr class="mb-4">
+
+                        <!-- Address & Location -->
+                        <h6 class="text-muted mb-3"><i class="fas fa-map-marker-alt"></i> Location Details</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label for="address" class="form-label fw-bold">Complete Address <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="address" name="address" rows="2" required placeholder="House No., Street, Landmark"></textarea>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <label for="lat" class="form-label fw-bold">Latitude</label>
+                                <input type="text" class="form-control bg-light" id="lat" name="lat" readonly placeholder="Auto-filled">
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <label for="lng" class="form-label fw-bold">Longitude</label>
+                                <input type="text" class="form-control bg-light" id="lng" name="lng" readonly placeholder="Auto-filled">
+                            </div>
+                            
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" id="getLocationBtn" class="btn btn-outline-danger w-100" title="Fetch GPS Coordinates">
+                                    <i class="fas fa-crosshairs"></i> Get GPS
+                                </button>
+                            </div>
+                            <!-- Small container for location status messages -->
+                            <div class="col-12 text-muted small" id="locationStatus"></div>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="mb-4">
+                            <label for="remarks" class="form-label fw-bold">Remarks (Optional)</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2" placeholder="Any additional notes about the family..."></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Family Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Geolocation Script -->
+<script>
+    document.getElementById('getLocationBtn').addEventListener('click', function() {
+        const latInput = document.getElementById('lat');
+        const lngInput = document.getElementById('lng');
+        const statusText = document.getElementById('locationStatus');
+
+        // Check if browser supports Geolocation
+        if (!navigator.geolocation) {
+            statusText.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Geolocation is not supported by your browser.</span>';
+            return;
+        }
+
+        statusText.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Locating... Please allow location access.</span>';
+
+        // Fetch coordinates
+        navigator.geolocation.getCurrentPosition(
+            // Success Callback
+            function(position) {
+                latInput.value = position.coords.latitude;
+                lngInput.value = position.coords.longitude;
+                statusText.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Location captured successfully!</span>';
+            },
+            // Error Callback
+            function(error) {
+                let errorMessage = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = "User denied the request for Geolocation.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = "Location information is unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = "The request to get user location timed out.";
+                        break;
+                    default:
+                        errorMessage = "An unknown error occurred.";
+                        break;
+                }
+                statusText.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${errorMessage}</span>`;
+            },
+            // Options for high accuracy
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    });
+</script>
+
+<%- include('../partials/footer') %>

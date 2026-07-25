@@ -1,0 +1,191 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<!-- Leaflet CSS & JS for Interactive Map Picker -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    #mapPicker { height: 340px; width: 100%; border-radius: 12px; border: 1px solid #cbd5e1; z-index: 1; }
+</style>
+
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-edit me-2"></i>Edit Family Details</h4>
+            <a href="/families/<%= family._id %>" class="btn btn-outline-secondary rounded-pill px-3">Cancel</a>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <form action="/families/<%= family._id %>/edit" method="POST">
+                <div class="row g-3 bg-white p-4 rounded shadow-sm">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">House Number *</label>
+                        <input type="text" name="houseNumber" class="form-control" value="<%= family.houseNumber %>" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Building/Apartment Name</label>
+                        <input type="text" name="buildingName" class="form-control" value="<%= family.buildingName || '' %>">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Street/Area *</label>
+                        <input type="text" name="streetArea" class="form-control" value="<%= family.streetArea %>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Landmark</label>
+                        <input type="text" name="landmark" class="form-control" value="<%= family.landmark || '' %>">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Ward Number</label>
+                        <input type="text" name="wardNumber" class="form-control" value="<%= family.wardNumber || '' %>">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Complete Address *</label>
+                        <textarea name="fullAddress" class="form-control" rows="2" required><%= family.fullAddress %></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">PIN Code *</label>
+                        <input type="text" name="pinCode" class="form-control" value="<%= family.pinCode %>" required>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Family Remarks</label>
+                        <input type="text" name="remarks" class="form-control" value="<%= family.remarks || '' %>">
+                    </div>
+                    
+                    <!-- Interactive Map Picker Widget for Editing -->
+                    <div class="col-12 mt-4">
+                        <div class="p-4 border border-primary-subtle rounded-4 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                <h6 class="text-primary fw-bold mb-0"><i class="fas fa-map-marked-alt me-2"></i>Update House Location on Map</h6>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold" onclick="getGPS()"><i class="fas fa-crosshairs me-1"></i> Use My GPS Position</button>
+                            </div>
+                            <p class="text-muted small mb-2">Click on the map or use GPS to move the house marker to a new location.</p>
+                            
+                            <!-- GPS Status Message Box -->
+                            <div id="gpsStatus" class="small mb-3" style="display:none;"></div>
+
+                            <div id="mapPicker" class="mb-3"></div>
+
+                            <div class="row g-2">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-bold text-muted">Latitude</label>
+                                    <input type="text" id="lat" name="lat" class="form-control form-control-sm bg-light font-monospace" value="<%= family.location ? family.location.lat : '' %>" readonly>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-bold text-muted">Longitude</label>
+                                    <input type="text" id="lng" name="lng" class="form-control form-control-sm bg-light font-monospace" value="<%= family.location ? family.location.lng : '' %>" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-success px-5 fw-bold rounded-pill shadow-sm"><i class="fas fa-save me-2"></i>Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mapbox GL JS CSS & JS -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<style>
+    #mapPicker { height: 340px; width: 100%; border-radius: 12px; border: 1px solid #cbd5e1; z-index: 1; }
+</style>
+
+<!-- (Keep your edit form HTML structure and update the script block below) -->
+
+<script>
+    // REPLACE WITH YOUR ACTUAL MAPBOX ACCESS TOKEN
+  mapboxgl.accessToken = '<%= mapToken %>';
+
+    let map = null;
+    let marker = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        let initLat = parseFloat(document.getElementById('lat').value) || 21.1458;
+        let initLng = parseFloat(document.getElementById('lng').value) || 79.0882;
+        
+        map = new mapboxgl.Map({
+            container: 'mapPicker',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [initLng, initLat],
+            zoom: 15
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        if (document.getElementById('lat').value && document.getElementById('lng').value) {
+            marker = new mapboxgl.Marker({ draggable: true })
+                .setLngLat([initLng, initLat])
+                .addTo(map);
+
+            marker.on('dragend', function() {
+                let pos = marker.getLngLat();
+                document.getElementById('lat').value = pos.lat.toFixed(6);
+                document.getElementById('lng').value = pos.lng.toFixed(6);
+            });
+        }
+
+        map.on('click', function(e) {
+            setMarker(e.lngLat.lng, e.lngLat.lat);
+        });
+    });
+
+    function setMarker(lng, lat) {
+        document.getElementById('lat').value = lat.toFixed(6);
+        document.getElementById('lng').value = lng.toFixed(6);
+
+        if (marker) {
+            marker.setLngLat([lng, lat]);
+        } else {
+            marker = new mapboxgl.Marker({ draggable: true })
+                .setLngLat([lng, lat])
+                .addTo(map);
+
+            marker.on('dragend', function() {
+                let pos = marker.getLngLat();
+                document.getElementById('lat').value = pos.lat.toFixed(6);
+                document.getElementById('lng').value = pos.lng.toFixed(6);
+            });
+        }
+        map.flyTo({ center: [lng, lat], zoom: 16 });
+    }
+
+    function getGPS() {
+        const statusBox = document.getElementById('gpsStatus');
+        if (statusBox) {
+            statusBox.style.display = 'block';
+            statusBox.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin me-1"></i> Requesting GPS position...</span>';
+        }
+
+        if (!navigator.geolocation) {
+            if (statusBox) statusBox.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> Geolocation not supported.</span>';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                setMarker(position.coords.longitude, position.coords.latitude);
+                if (statusBox) statusBox.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> GPS location captured successfully!</span>';
+            }, 
+            error => {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        setMarker(position.coords.longitude, position.coords.latitude);
+                        if (statusBox) statusBox.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> Location captured via network positioning!</span>';
+                    },
+                    fallbackError => {
+                        if (statusBox) statusBox.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> GPS unavailable. Please click directly on the map.</span>';
+                    },
+                    { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
+                );
+            }, 
+            { timeout: 7000, enableHighAccuracy: true, maximumAge: 0 }
+        );
+    }
+</script>
+
+
+<%- include('../partials/footer') %>

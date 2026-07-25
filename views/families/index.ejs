@@ -1,0 +1,133 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="apple-bg-ambient">
+<div class="directory-wrapper">
+    <div class="container-xl px-3 px-md-4 pb-5">
+        
+        <!-- Header & Action -->
+        <div class="premium-glass-card mb-4 p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="mb-1 fw-bold text-dark" style="font-family: 'Fraunces', serif;">Family Household Directory</h2>
+                <p class="text-muted small mb-0 fw-medium">Manage registered family units and geospatial records.</p>
+            </div>
+            <a href="/families/wizard" class="btn btn-ios-solid rounded-pill px-4 shadow-sm fw-bold">
+                <i class="fas fa-plus me-2"></i> Register New Family
+            </a>
+        </div>
+
+        <!-- Redesigned Search Bar Card -->
+        <div class="premium-glass-card mb-4 p-4">
+            <form method="GET" action="/families" class="row g-2 align-items-center">
+                <div class="col-md-10">
+                    <div class="input-group input-group-lg shadow-sm ios-input-group">
+                        <span class="input-group-text bg-white border-end-0 ps-3"><i class="fas fa-search text-primary"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0 ps-2" placeholder="Search by Family ID, Address, Mobile, or Member Name..." value="<%= typeof search !== 'undefined' ? search : '' %>">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-ios-solid btn-lg w-100 fw-bold shadow-sm">Search</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="premium-glass-card p-0 overflow-hidden shadow-sm">
+            <div class="table-responsive mb-0">
+                <table class="table table-hover align-middle mb-0 custom-glass-table">
+                    <thead class="bg-white bg-opacity-50 border-bottom">
+                        <tr>
+                            <th class="ps-4 py-3 text-muted small fw-semibold text-uppercase">Family ID</th>
+                            <th class="py-3 text-muted small fw-semibold text-uppercase">Head of Family</th>
+                            <th class="py-3 text-muted small fw-semibold text-uppercase">Contact</th>
+                            <th class="py-3 text-muted small fw-semibold text-uppercase">Address</th>
+                            <th class="text-center py-3 text-muted small fw-semibold text-uppercase">Members</th>
+                            <th class="pe-4 text-end py-3 text-muted small fw-semibold text-uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (families && families.length > 0) { %>
+                            <% families.forEach(family => { %>
+                                <tr onclick="window.location='/families/<%= family._id %>'" style="cursor: pointer;" class="glass-table-row">
+                                    <td class="ps-4 py-3">
+                                        <span class="badge bg-white text-dark border border-secondary-subtle font-monospace px-2 py-1 shadow-sm">
+                                            <%= family.familyId %>
+                                        </span>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center me-3 fw-bold" style="width: 40px; height: 40px; min-width: 40px;">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="d-block text-dark mb-1"><%= family.headOfFamily ? family.headOfFamily.fullName : 'Pending' %></strong>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle fw-normal">Ward <%= family.wardNumber || 'N/A' %></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <i class="fas fa-phone-alt text-success small me-1"></i> <%= family.mobile || 'N/A' %>
+                                    </td>
+                                    <td style="max-width: 250px;" class="text-truncate py-3" title="<%= family.fullAddress %>">
+                                        <i class="fas fa-map-marker-alt text-danger small me-1"></i> <%= family.houseNumber %>, <%= family.streetArea %>
+                                    </td>
+                                    <td class="text-center py-3">
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-3 fw-bold"><%= family.memberCount %></span>
+                                    </td>
+                                    <td class="pe-4 text-end py-3">
+                                        <a href="/families/<%= family._id %>" class="btn btn-sm btn-ios-outline rounded-pill px-3 shadow-sm">View</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-search fs-1 text-light mb-3 opacity-50"></i>
+                                    <h5>No families found</h5>
+                                    <p class="mb-0">Try adjusting your search criteria or register a new family.</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+    .apple-bg-ambient {
+        min-height: 100vh;
+        background-color: #f4f6f9;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
+        background-attachment: fixed;
+    }
+    .directory-wrapper { padding-top: 6.5rem; }
+    @media (max-width: 767.98px) { .directory-wrapper { padding-top: 5.2rem; } }
+
+    .premium-glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,1);
+    }
+    
+    .ios-input-group { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; }
+    .ios-input-group .form-control { border: none; box-shadow: none; padding: 0.75rem 1rem; }
+
+    .custom-glass-table { border-collapse: separate; border-spacing: 0; }
+    .glass-table-row { background: rgba(255,255,255,0.4); transition: background 0.2s; }
+    .glass-table-row:hover { background: rgba(255,255,255,0.9); }
+
+    .btn-ios-outline { background: rgba(255,255,255,0.8); border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; transition: all 0.2s; }
+    .btn-ios-outline:hover { background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .btn-ios-solid { background: #4f46e5; color: #ffffff; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(79,70,229,0.3); transition: all 0.2s; }
+    .btn-ios-solid:hover { background: #4338ca; color: #ffffff; box-shadow: 0 6px 20px rgba(79,70,229,0.4); }
+</style>
+
+<%- include('../partials/footer') %>

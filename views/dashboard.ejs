@@ -1,0 +1,412 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div class="dash-wrapper">
+<div class="container-fluid px-3 px-md-4 pb-5">
+    <%
+        const safeBoys = typeof boysCount !== 'undefined' ? boysCount : 0;
+        const safeGirls = typeof girlsCount !== 'undefined' ? girlsCount : 0;
+        const safeAdultMen = typeof adultMen !== 'undefined' ? adultMen : 0;
+        const safeAdultWomen = typeof adultWomen !== 'undefined' ? adultWomen : 0;
+        const safeSeniorMen = typeof seniorMen !== 'undefined' ? seniorMen : 0;
+        const safeSeniorWomen = typeof seniorWomen !== 'undefined' ? seniorWomen : 0;
+        const safeWorkingPros = typeof workingPros !== 'undefined' ? workingPros : 0;
+        const safeFarmers = typeof farmers !== 'undefined' ? farmers : 0;
+        const safeGraduates = typeof graduates !== 'undefined' ? graduates : 0;
+        const safePostGrads = typeof postGrads !== 'undefined' ? postGrads : 0;
+        const safeTotalVoters = typeof totalVoters !== 'undefined' ? totalVoters : 0;
+        const safeDisabledCount = typeof disabledCount !== 'undefined' ? disabledCount : 0;
+        const safeAvgFamSize = typeof averageFamilySize !== 'undefined' ? averageFamilySize : 0;
+        const safeAvgAge = typeof averageAge !== 'undefined' ? averageAge : 0;
+        const safeGpsFam = typeof gpsFamilies !== 'undefined' ? gpsFamilies : 0;
+        const safeTotalFamilies = typeof totalFamilies !== 'undefined' ? totalFamilies : 0;
+        const safeTotalResidents = typeof totalResidents !== 'undefined' ? totalResidents : 0;
+
+        const getPct = (val) => {
+            if (!safeTotalResidents || safeTotalResidents === 0) return 0;
+            return Math.min(100, Math.round((val / safeTotalResidents) * 100));
+        };
+        const mappedPct = safeTotalFamilies > 0 ? Math.min(100, Math.round((safeGpsFam / safeTotalFamilies) * 100)) : 0;
+    %>
+
+    <!-- HERO -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 hero-block">
+        <div>
+            <h1 class="hero-title mb-1">Overview</h1>
+            <p class="hero-sub mb-0">Community demographics, mapped households &amp; registry health.</p>
+        </div>
+        <div class="d-flex gap-2 hero-actions">
+            <!-- Restricted Export Button for Main Users Only -->
+            <% if (typeof isSuperAdmin !== 'undefined' && isSuperAdmin) { %>
+                <a href="/admin/export/csv" class="btn btn-glass flex-fill flex-md-grow-0">
+                    <i class="fas fa-file-csv me-2 text-success"></i>Export CSV
+                </a>
+            <% } %>
+            <a href="/families/wizard" class="btn btn-solid flex-fill flex-md-grow-0">
+                <i class="fas fa-plus me-2"></i>Add Record
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI CARDS (Horizontal Scroll on Mobile) -->
+    <div class="row g-3 mb-4 mobile-scroll-row">
+        <!-- Using col-10 on mobile allows the next card to "peek" into view, hinting to swipe -->
+        <div class="col-10 col-md-6 col-lg-3">
+            <div class="glass-card kpi-card h-100">
+                <div class="kpi-icon icon-navy"><i class="fas fa-home"></i></div>
+                <div class="kpi-value"><%= safeTotalFamilies %></div>
+                <div class="kpi-label">Total Families</div>
+                <div class="kpi-foot"><i class="fas fa-map-marker-alt me-1"></i><%= safeGpsFam %> mapped</div>
+            </div>
+        </div>
+        <div class="col-10 col-md-6 col-lg-3">
+            <div class="glass-card kpi-card h-100">
+                <div class="kpi-icon icon-emerald"><i class="fas fa-users"></i></div>
+                <div class="kpi-value"><%= safeTotalResidents %></div>
+                <div class="kpi-label">Total Residents</div>
+                <div class="kpi-foot"><i class="fas fa-birthday-cake me-1"></i>Avg age <%= safeAvgAge %></div>
+            </div>
+        </div>
+        <div class="col-10 col-md-6 col-lg-3">
+            <div class="glass-card kpi-card h-100">
+                <div class="kpi-icon icon-brass"><i class="fas fa-vote-yea"></i></div>
+                <div class="kpi-value"><%= safeTotalVoters %></div>
+                <div class="kpi-label">Registered Voters</div>
+                <div class="kpi-foot"><i class="fas fa-chart-pie me-1"></i><%= getPct(safeTotalVoters) %>% of pop.</div>
+            </div>
+        </div>
+        <div class="col-10 col-md-6 col-lg-3">
+            <div class="glass-card kpi-card h-100">
+                <div class="kpi-icon icon-slate"><i class="fas fa-tractor"></i></div>
+                <div class="kpi-value"><%= safeFarmers %></div>
+                <div class="kpi-label">Farmers</div>
+                <div class="kpi-foot"><i class="fas fa-briefcase me-1"></i><%= safeWorkingPros %> Pros</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS (Horizontal Scroll on Mobile) -->
+    <div class="row g-3 mb-4 mobile-scroll-row">
+        <!-- Using col-11 on mobile makes charts take up most of the screen while hinting to swipe -->
+        <div class="col-11 col-md-6 col-lg-4">
+            <div class="glass-card chart-card h-100 d-flex flex-column">
+                <div class="chart-card-head">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-icon icon-navy"><i class="fas fa-venus-mars"></i></span>
+                        <h6 class="mb-0">Gender &amp; Age</h6>
+                    </div>
+                </div>
+                <div class="chart-holder flex-grow-1" style="min-height:240px; position:relative;">
+                    <canvas id="genderAgeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-11 col-md-6 col-lg-4">
+            <div class="glass-card chart-card h-100 d-flex flex-column">
+                <div class="chart-card-head">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-icon icon-emerald"><i class="fas fa-chart-bar"></i></span>
+                        <h6 class="mb-0">Life Stages</h6>
+                    </div>
+                </div>
+                <div class="chart-holder flex-grow-1" style="min-height:240px; position:relative;">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-11 col-md-6 col-lg-4">
+            <div class="glass-card chart-card h-100 d-flex flex-column">
+                <div class="chart-card-head">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-icon icon-brass"><i class="fas fa-tint"></i></span>
+                        <h6 class="mb-0">Blood Groups</h6>
+                    </div>
+                </div>
+                <div class="chart-holder flex-grow-1" style="min-height:240px; position:relative;">
+                    <canvas id="bloodGroupChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BIRTHDAYS + ACTIVITY + MAP -->
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <!-- Birthdays -->
+            <div class="glass-card list-card mb-3">
+                <div class="list-card-head">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-icon icon-emerald"><i class="fas fa-birthday-cake"></i></span>
+                        <h6 class="mb-0">Today's Birthdays</h6>
+                    </div>
+                    <span class="count-pill"><%= typeof todaysBirthdays !== 'undefined' ? todaysBirthdays.length : 0 %></span>
+                </div>
+                <% if (typeof todaysBirthdays !== 'undefined' && todaysBirthdays.length > 0) { %>
+                    <div class="d-flex flex-column gap-2 mt-2">
+                        <% todaysBirthdays.forEach(person => { %>
+                            <div class="row-item">
+                                <div class="row-avatar icon-emerald"><i class="fas fa-gift"></i></div>
+                                <div class="row-text">
+                                    <span class="row-title"><%= person.fullName %></span>
+                                    <span class="row-sub"><i class="fas fa-phone-alt me-1"></i><%= person.mobile %></span>
+                                </div>
+                                <% if (person.whatsappNumber || person.mobile) { %>
+                                    <a href="https://wa.me/91<%= person.whatsappNumber || person.mobile %>?text=Happy%20Birthday!" target="_blank" class="btn-whatsapp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                <% } %>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <p class="empty-note">No birthdays today.</p>
+                <% } %>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="glass-card list-card mb-3 mb-lg-0">
+                <div class="list-card-head">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-icon icon-slate"><i class="fas fa-history"></i></span>
+                        <h6 class="mb-0">Recent Activity</h6>
+                    </div>
+                </div>
+                <div class="d-flex flex-column gap-2 mt-2">
+                    <% if (typeof recentFamilies !== 'undefined' && recentFamilies.length > 0) { %>
+                        <% recentFamilies.slice(0,2).forEach(fam => { %>
+                            <div class="row-item">
+                                <div class="row-avatar icon-navy"><i class="fas fa-home"></i></div>
+                                <div class="row-text">
+                                    <span class="row-title"><%= fam.headOfFamily ? fam.headOfFamily.fullName + "'s Family" : 'New Family' %></span>
+                                    <span class="row-sub">Family registered</span>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                    <% if (typeof recentResidents !== 'undefined' && recentResidents.length > 0) { %>
+                        <% recentResidents.slice(0,2).forEach(res => { %>
+                            <div class="row-item">
+                                <div class="row-avatar icon-brass"><i class="fas fa-user"></i></div>
+                                <div class="row-text">
+                                    <span class="row-title"><%= res.fullName %></span>
+                                    <span class="row-sub">Resident added</span>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                    <% if ((typeof recentFamilies === 'undefined' || recentFamilies.length === 0) && (typeof recentResidents === 'undefined' || recentResidents.length === 0)) { %>
+                        <p class="empty-note">No recent activity.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map & Quick Facts -->
+        <div class="col-lg-7 d-flex flex-column gap-3">
+            <div class="glass-card map-card flex-grow-1 d-flex flex-column">
+                <div class="list-card-head">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-icon icon-brass"><i class="fas fa-map-marker-alt"></i></span>
+                        <h6 class="mb-0">Household Map</h6>
+                    </div>
+                    <span class="count-pill"><%= safeGpsFam %> pins</span>
+                </div>
+                <div class="map-frame mt-2 flex-grow-1" style="min-height: 250px;">
+                    <iframe width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen title="Community map" src="https://maps.google.com/maps?q=Besa+Pipla+Nagpur&z=13&output=embed"></iframe>
+                </div>
+            </div>
+
+            <!-- Quick Facts -->
+            <div class="glass-card quick-facts">
+                <div class="qf-item">
+                    <span class="qf-label">Avg Family Size</span>
+                    <span class="qf-value"><%= safeAvgFamSize %></span>
+                </div>
+                <div class="qf-item">
+                    <span class="qf-label">Oldest Resident</span>
+                    <span class="qf-value text-truncate"><%= typeof oldestResident !== 'undefined' && oldestResident ? oldestResident.age + 'y' : 'N/A' %></span>
+                </div>
+                <div class="qf-item">
+                    <span class="qf-label">PWD Citizens</span>
+                    <span class="qf-value"><%= safeDisabledCount %></span>
+                </div>
+                <div class="qf-item">
+                    <span class="qf-label">Graduates+</span>
+                    <span class="qf-value"><%= safeGraduates + safePostGrads %></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Scripts & Styling -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+    // Gender & Age Chart
+    const genderAgeCtx = document.getElementById('genderAgeChart').getContext('2d');
+    new Chart(genderAgeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Boys', 'Girls', 'Men', 'Women', 'Sr. Men', 'Sr. Women'],
+            datasets: [{
+                data: [<%= safeBoys %>, <%= safeGirls %>, <%= safeAdultMen %>, <%= safeAdultWomen %>, <%= safeSeniorMen %>, <%= safeSeniorWomen %>],
+                backgroundColor: ['#60a5fa', '#f472b6', '#1e3a8a', '#be185d', '#0f172a', '#831843'],
+                borderWidth: 2, borderColor: '#ffffff'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10 } } } }, cutout: '60%' }
+    });
+
+    // Life Stages Chart
+    const ageCtx = document.getElementById('ageChart').getContext('2d');
+    new Chart(ageCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Children', 'Adults', 'Seniors'],
+            datasets: [{
+                label: 'Population',
+                data: <%- typeof ageData !== 'undefined' ? ageData : '[0,0,0]' %>,
+                backgroundColor: ['#10b981', '#1e3a8a', '#b45309'],
+                borderRadius: 8, barThickness: 32
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } }, x: { grid: { display: false } } } }
+    });
+
+    // Blood Group Chart
+    const bloodCtx = document.getElementById('bloodGroupChart').getContext('2d');
+    new Chart(bloodCtx, {
+        type: 'pie',
+        data: {
+            labels: <%- typeof bloodLabels !== 'undefined' ? bloodLabels : '[]' %>,
+            datasets: [{
+                data: <%- typeof bloodData !== 'undefined' ? bloodData : '[]' %>,
+                backgroundColor: ['#ef4444', '#b45309', '#7c3aed', '#0891b2', '#059669', '#65a30d', '#475569'],
+                borderWidth: 2, borderColor: '#ffffff'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10 } } } } }
+    });
+</script>
+
+<style>
+    :root {
+        --navy: #0f2a4a; --navy-deep: #0a1f38; --brass: #b8863b;
+        --slate: #475569; --emerald: #0f9d6a;
+        --glass-bg: rgba(255,255,255,0.78);
+        --glass-border: rgba(255,255,255,0.9);
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f1f5f9;
+        background-image: 
+            radial-gradient(circle at 10% 0%, rgba(79, 70, 229, 0.08) 0%, transparent 45%),
+            radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 45%);
+        background-attachment: fixed;
+    }
+
+    .dash-wrapper { padding-top: 5rem; }
+    @media (max-width: 767.98px) { .dash-wrapper { padding-top: 4.5rem; overflow-x: hidden; } }
+
+    .hero-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 2.1rem; color: var(--navy-deep); letter-spacing: -0.02em; }
+    .hero-sub { color: var(--slate); font-size: 0.95rem; font-weight: 500; }
+    @media (max-width: 575.98px) {
+        .hero-title { font-size: 1.6rem; }
+        .hero-actions .btn-glass, .hero-actions .btn-solid { font-size: 0.9rem; padding: 0.6rem; }
+    }
+
+    /* Glass base */
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px) saturate(200%);
+        -webkit-backdrop-filter: blur(25px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,1);
+        padding: 1.25rem; transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .glass-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+
+    /* Buttons */
+    .btn-glass, .btn-solid {
+        border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+        padding: 0.6rem 1.4rem; text-decoration: none;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .btn-glass { background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,1); color: var(--navy-deep); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .btn-glass:hover { background: #ffffff; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .btn-solid { background: #4f46e5; color: #fff; border: none; box-shadow: 0 4px 15px rgba(79,70,229,0.25); }
+    .btn-solid:hover { background: #4338ca; color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.35); }
+
+    /* KPI cards */
+    .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; margin-bottom: 0.75rem; background: #fff; border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+    .kpi-value { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 700; color: var(--navy-deep); line-height: 1.1; }
+    .kpi-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate); margin-top: 0.2rem; }
+    .kpi-foot { font-size: 0.75rem; color: var(--slate); margin-top: 0.6rem; font-weight: 500; }
+    
+    @media (max-width: 575.98px) {
+        .kpi-value { font-size: 1.5rem; }
+        .kpi-icon { width: 36px; height: 36px; font-size: 1rem; margin-bottom: 0.5rem; }
+        .kpi-label { font-size: 0.68rem; }
+        .glass-card { padding: 1rem; border-radius: 16px; }
+    }
+
+    .icon-navy { color: #4f46e5; }
+    .icon-emerald { color: #10b981; }
+    .icon-brass { color: #f59e0b; }
+    .icon-slate { color: #64748b; }
+
+    /* Horizontal Scroll for Mobile Cards */
+    @media (max-width: 767.98px) {
+        .mobile-scroll-row {
+            flex-wrap: nowrap !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 15px; /* Space for box-shadows */
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+        }
+        .mobile-scroll-row::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+        .mobile-scroll-row > div {
+            scroll-snap-align: center;
+        }
+    }
+
+    /* Charts & Lists */
+    .chart-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+    .row-item { display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.9); border-radius: 14px; padding: 0.6rem 0.8rem; transition: background 0.2s; }
+    .row-item:hover { background: #ffffff; }
+    .row-avatar { width: 36px; height: 36px; min-width: 36px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .row-text { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
+    .row-title { font-weight: 600; color: var(--navy-deep); font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-sub { font-size: 0.75rem; color: var(--slate); font-weight: 500; }
+    .btn-whatsapp { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; text-decoration: none; box-shadow: 0 4px 10px rgba(37,211,102,0.3); transition: transform 0.2s; }
+    .btn-whatsapp:hover { color: #fff; transform: scale(1.08); }
+    .count-pill { background: #fff; color: var(--slate); font-weight: 700; font-size: 0.75rem; border-radius: 50px; padding: 0.25rem 0.7rem; border: 1px solid rgba(0,0,0,0.05); }
+    .empty-note { color: var(--slate); font-size: 0.85rem; padding: 0.5rem; text-align: center; background: rgba(0,0,0,0.02); border-radius: 10px; }
+
+    /* Map & Facts */
+    .map-frame { border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .quick-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .qf-item { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .qf-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate); font-weight: 600; }
+    .qf-value { font-family: 'Fraunces', serif; font-weight: 700; color: var(--navy-deep); font-size: 1.1rem; }
+    @media (max-width: 575.98px) { .quick-facts { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; } }
+</style>
+
+<%- include('partials/footer') %>

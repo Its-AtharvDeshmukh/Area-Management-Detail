@@ -1,0 +1,723 @@
+<%- include('partials/header') %> 
+<%- include('partials/navbar') %> 
+
+<link rel="preconnect" href="https://fonts.googleapis.com"> 
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"> 
+
+<div class="civic-dashboard"> 
+<div class="container-fluid px-4 px-lg-5 py-4"> 
+
+    <% 
+        // Helper function to calculate population percentage safely
+        const getPct = (val) => {
+            if (!totalResidents || totalResidents === 0) return 0;
+            return Math.min(100, Math.round((val / totalResidents) * 100));
+        };
+    %>
+
+    <!-- ============ WELCOME HEADER ============ --> 
+    <div class="welcome-band mb-4"> 
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3"> 
+            <div class="d-flex align-items-center gap-3"> 
+                <div class="seal-badge" aria-hidden="true"> 
+                    <i class="fas fa-city"></i> 
+                </div> 
+                <div> 
+                    <span class="eyebrow">Municipal Register &middot; Est. Directory</span> 
+                    <h1 class="welcome-title">Dattaham Nagar Directory</h1> 
+                    <p class="welcome-sub mb-0">Community records, demographics and household registry at a glance.</p> 
+                </div> 
+            </div> 
+            <div class="d-flex align-items-center gap-2 flex-wrap header-actions"> 
+                <a href="/residents/add" class="btn btn-civic-primary"> 
+                    <i class="fas fa-user-plus"></i> Add Resident 
+                </a> 
+                <a href="/families/add" class="btn btn-civic-outline"> 
+                    <i class="fas fa-home"></i> Add Family 
+                </a> 
+            </div> 
+        </div> 
+        <nav aria-label="breadcrumb" class="mt-3"> 
+            <ol class="breadcrumb civic-breadcrumb mb-0"> 
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li> 
+                <li class="breadcrumb-item active" aria-current="page">Analytics Hub</li> 
+            </ol> 
+        </nav> 
+    </div> 
+
+    <!-- ============ SECTION: COMMUNITY OVERVIEW ============ --> 
+    <div class="section-label"><span>Community Overview</span></div> 
+    <div class="row g-3 mb-4"> 
+        <% const renderCard = (title, count, icon, tone, desc) => { %> 
+            <div class="col-sm-6 col-xl-3"> 
+                <div class="ledger-card h-100"> 
+                    <div class="ledger-card-top" data-tone="<%= tone %>"></div> 
+                    <div class="ledger-card-body"> 
+                        <div class="d-flex align-items-center justify-content-between mb-3"> 
+                            <div class="seal-icon" data-tone="<%= tone %>"> 
+                                <i class="<%= icon %>"></i> 
+                            </div> 
+                            <span class="pct-chip"><%= getPct(count) %>% <span class="pct-chip-label">of pop.</span></span> 
+                        </div> 
+                        <span class="ledger-label"><%= title %></span> 
+                        <div class="ledger-figure"><%= count %></div> 
+                        <p class="ledger-desc"><%= desc %></p> 
+                    </div> 
+                </div> 
+            </div> 
+        <% } %> 
+        
+        <% 
+            // Fallback safe defaults for counts if undefined in older controllers
+            const safeBoys = typeof boysCount !== 'undefined' ? boysCount : 0;
+            const safeGirls = typeof girlsCount !== 'undefined' ? girlsCount : 0;
+            const safeAdultMen = typeof adultMen !== 'undefined' ? adultMen : 0;
+            const safeAdultWomen = typeof adultWomen !== 'undefined' ? adultWomen : 0;
+            const safeSeniorMen = typeof seniorMen !== 'undefined' ? seniorMen : 0;
+            const safeSeniorWomen = typeof seniorWomen !== 'undefined' ? seniorWomen : 0;
+            const safeWorkingPros = typeof workingPros !== 'undefined' ? workingPros : 0;
+            const safeFarmers = typeof farmers !== 'undefined' ? farmers : 0;
+            const safeGraduates = typeof graduates !== 'undefined' ? graduates : 0;
+            const safePostGrads = typeof postGrads !== 'undefined' ? postGrads : 0;
+            const safeTotalVoters = typeof totalVoters !== 'undefined' ? totalVoters : 0;
+            const safeDisabledCount = typeof disabledCount !== 'undefined' ? disabledCount : 0;
+            const safeAvgFamSize = typeof averageFamilySize !== 'undefined' ? averageFamilySize : 0;
+            const safeAvgAge = typeof averageAge !== 'undefined' ? averageAge : 0;
+            const safeGpsFam = typeof gpsFamilies !== 'undefined' ? gpsFamilies : 0;
+            const safeRecentRes = typeof recentResidents !== 'undefined' ? recentResidents : [];
+            const safeRecentFam = typeof recentFamilies !== 'undefined' ? recentFamilies : [];
+        %>
+
+        <% renderCard('Total Families', totalFamilies, 'fas fa-home', 'navy', 'Registered households in jurisdiction') %> 
+        <% renderCard('Total Residents', totalResidents, 'fas fa-users', 'brass', 'Total active registered citizens') %> 
+        <% renderCard('Male Residents', totalMales, 'fas fa-mars', 'slate', 'Total registered male population') %> 
+        <% renderCard('Female Residents', totalFemales, 'fas fa-venus', 'brick', 'Total registered female population') %> 
+        <% renderCard('Boys (0&ndash;18)', safeBoys, 'fas fa-child', 'navy', 'Children and minor males') %> 
+        <% renderCard('Girls (0&ndash;18)', safeGirls, 'fas fa-child', 'brass', 'Children and minor females') %> 
+        <% renderCard('Adult Men (19&ndash;59)', safeAdultMen, 'fas fa-male', 'slate', 'Working age male demographic') %> 
+        <% renderCard('Adult Women (19&ndash;59)', safeAdultWomen, 'fas fa-female', 'brick', 'Working age female demographic') %> 
+        <% renderCard('Senior Men (60+)', safeSeniorMen, 'fas fa-user-tie', 'navy', 'Elderly male citizens') %> 
+        <% renderCard('Senior Women (60+)', safeSeniorWomen, 'fas fa-user-nurse', 'brass', 'Elderly female citizens') %> 
+        <% renderCard('Working Professionals', safeWorkingPros, 'fas fa-briefcase', 'slate', 'Corporate &amp; salaried employees') %> 
+        <% renderCard('Farmers', safeFarmers, 'fas fa-tractor', 'brick', 'Agricultural landholders &amp; workers') %> 
+        <% renderCard('Graduates', safeGraduates, 'fas fa-graduation-cap', 'navy', 'Holders of Bachelor degrees') %> 
+        <% renderCard('Post Graduates', safePostGrads, 'fas fa-user-graduate', 'brass', 'Holders of Master/Doctorate degrees') %> 
+        <% renderCard('Registered Voters', safeTotalVoters, 'fas fa-vote-yea', 'slate', 'Eligible voters with EPIC ID') %> 
+        <% renderCard('Persons with Disability', safeDisabledCount, 'fas fa-wheelchair', 'brick', 'Registered special needs citizens') %> 
+    </div> 
+
+    <!-- ============ SECTION: COMMUNITY INSIGHTS ============ --> 
+    <div class="section-label"><span>Community Insights</span></div> 
+    <div class="insight-strip mb-4"> 
+        <div class="row g-0"> 
+            <div class="col-6 col-md-3 insight-cell"> 
+                <span class="insight-label">Average Family Size</span> 
+                <div class="insight-value"><%= safeAvgFamSize %> <span class="insight-unit">members</span></div> 
+            </div> 
+            <div class="col-6 col-md-3 insight-cell"> 
+                <span class="insight-label">Average Resident Age</span> 
+                <div class="insight-value"><%= safeAvgAge %> <span class="insight-unit">years</span></div> 
+            </div> 
+            <div class="col-6 col-md-3 insight-cell"> 
+                <span class="insight-label">Oldest Resident</span> 
+                <div class="insight-value insight-value-sm text-truncate"><%= typeof oldestResident !== 'undefined' && oldestResident ? oldestResident.fullName + ' (' + oldestResident.age + 'y)' : 'N/A' %></div> 
+            </div> 
+            <div class="col-6 col-md-3 insight-cell insight-cell-last"> 
+                <span class="insight-label">Youngest Resident</span> 
+                <div class="insight-value insight-value-sm text-truncate"><%= typeof youngestResident !== 'undefined' && youngestResident ? youngestResident.fullName + ' (' + youngestResident.age + 'y)' : 'N/A' %></div> 
+            </div> 
+        </div> 
+    </div> 
+
+    <!-- ============ SECTION: POPULATION ANALYTICS ============ --> 
+    <div class="section-label"><span>Population Analytics</span></div> 
+    <div class="row g-4 mb-4"> 
+        <div class="col-lg-7"> 
+            <div class="civic-panel h-100"> 
+                <div class="civic-panel-header"> 
+                    <h2 class="panel-title">Population by Age Milestones</h2> 
+                    <p class="panel-sub">Children, adults, and senior citizens distribution</p> 
+                </div> 
+                <div class="civic-panel-body"> 
+                    <div style="height: 320px; position: relative;"> 
+                        <canvas id="ageChart"></canvas> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+        <div class="col-lg-5"> 
+            <div class="civic-panel h-100"> 
+                <div class="civic-panel-header"> 
+                    <h2 class="panel-title">Blood Group Distribution</h2> 
+                    <p class="panel-sub">Emergency medical database profile</p> 
+                </div> 
+                <div class="civic-panel-body d-flex justify-content-center align-items-center"> 
+                    <div style="height: 290px; width: 100%; position: relative;"> 
+                        <canvas id="bloodGroupChart"></canvas> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+
+    <!-- ============ SECTION: ACTIVITY + QUICK ACTIONS ============ --> 
+    <div class="row g-4 mb-4"> 
+        <!-- Recent Activity Feed --> 
+        <div class="col-lg-7"> 
+            <div class="civic-panel h-100"> 
+                <div class="civic-panel-header"> 
+                    <h2 class="panel-title">Recent System Activity</h2> 
+                </div> 
+                <div class="civic-panel-body pt-0"> 
+                    <div class="timeline"> 
+                        <% if (safeRecentRes.length === 0 && safeRecentFam.length === 0) { %> 
+                            <div class="empty-state"> 
+                                <i class="fas fa-inbox"></i> 
+                                <p>No recent activity yet. New residents and families will appear here.</p> 
+                            </div> 
+                        <% } %> 
+                        <% safeRecentRes.forEach(res => { %> 
+                            <div class="activity-row"> 
+                                <div class="activity-icon" data-tone="brass"> 
+                                    <i class="fas fa-user-plus"></i> 
+                                </div> 
+                                <div> 
+                                    <h3 class="activity-title"><%= res.fullName %> <span class="activity-tag">New Resident</span></h3> 
+                                    <p class="activity-meta">Occupation: <%= res.occupationType || res.occupation || 'N/A' %> &middot; Blood Group: <%= res.bloodGroup || 'N/A' %></p> 
+                                </div> 
+                            </div> 
+                        <% }) %> 
+                        <% safeRecentFam.forEach(fam => { %> 
+                            <div class="activity-row"> 
+                                <div class="activity-icon" data-tone="navy"> 
+                                    <i class="fas fa-home"></i> 
+                                </div> 
+                                <div> 
+                                    <h3 class="activity-title"><%= fam.headOfFamily ? fam.headOfFamily.fullName : 'Head' %>'s Family <span class="activity-tag activity-tag-id"><%= fam.familyId %></span></h3> 
+                                    <p class="activity-meta">Address: <%= fam.fullAddress || fam.address %></p> 
+                                </div> 
+                            </div> 
+                        <% }) %> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+        <!-- Quick Actions Panel --> 
+        <div class="col-lg-5"> 
+            <div class="civic-panel h-100"> 
+                <div class="civic-panel-header"> 
+                    <h2 class="panel-title">Quick Administrative Actions</h2> 
+                </div> 
+                <div class="civic-panel-body"> 
+                    <div class="d-grid gap-2"> 
+                        <a href="/families/wizard" class="quick-action"> 
+                            <span><i class="fas fa-home"></i> Register New Family</span> 
+                            <i class="fas fa-chevron-right quick-action-arrow"></i> 
+                        </a> 
+                        <a href="/residents" class="quick-action"> 
+                            <span><i class="fas fa-search"></i> Search Resident Directory</span> 
+                            <i class="fas fa-chevron-right quick-action-arrow"></i> 
+                        </a> 
+                        <a href="/families" class="quick-action"> 
+                            <span><i class="fas fa-map-marked-alt"></i> Manage Family Units</span> 
+                            <i class="fas fa-chevron-right quick-action-arrow"></i> 
+                        </a> 
+                        <a href="/admin/export/csv" class="quick-action"> 
+                            <span><i class="fas fa-file-csv text-success"></i> Export Census CSV Report</span> 
+                            <i class="fas fa-download quick-action-arrow"></i> 
+                        </a> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+
+    <!-- ============ SECTION: COMMUNITY MAP ============ --> 
+    <div class="section-label"><span>Geospatial Community Map</span></div> 
+    <div class="row g-4 mb-4"> 
+        <div class="col-12"> 
+            <div class="civic-panel overflow-hidden"> 
+                <div class="civic-panel-header d-flex justify-content-between align-items-center flex-wrap gap-2"> 
+                    <h2 class="panel-title mb-0"><i class="fas fa-map-marker-alt me-2"></i>Interactive Map</h2> 
+                    <span class="gps-chip"><%= safeGpsFam %> GPS locations mapped</span> 
+                </div> 
+                <div style="height: 400px; width: 100%;"> 
+                    <iframe width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen 
+                        title="Community map of registered families" 
+                        src="https://maps.google.com/maps?q=Besa+Pipla+Nagpur&z=13&output=embed"></iframe> 
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+</div> 
+
+<!-- ============ SECTION: TODAY'S BIRTHDAYS & AUTOMATED GREETINGS ============ -->
+    <div class="section-label"><span>Automated Birthday Greetings</span></div>
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="civic-panel border-start border-success border-4">
+                <div class="civic-panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h2 class="panel-title"><i class="fas fa-birthday-cake text-success me-2"></i>Birthdays Today</h2>
+                        <p class="panel-sub">Residents celebrating their birthday today. Automated greetings ready for dispatch.</p>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                        <%= todaysBirthdays ? todaysBirthdays.length : 0 %> Citizens Celebrating Today
+                    </span>
+                </div>
+                <div class="civic-panel-body">
+                    <% if (todaysBirthdays && todaysBirthdays.length > 0) { %>
+                        <div class="row g-3">
+                            <% todaysBirthdays.forEach(person => { %>
+                                <div class="col-md-6 col-xl-4">
+                                    <div class="p-3 bg-light border rounded-3 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-1"><%= person.fullName %></h6>
+                                            <p class="text-muted small mb-0"><%= person.relationship %> &middot; Mobile: <%= person.mobile %></p>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <% if (person.whatsappNumber || person.mobile) { %>
+                                                <% const phoneNum = person.whatsappNumber || person.mobile; %>
+                                                <% const msg = encodeURIComponent(`Warmest birthday greetings from Dattaham Nagar Municipality! Wishing you health, joy, and prosperity on your special day.`); %>
+                                                <a href="https://wa.me/91<%= phoneNum %>?text=<%= msg %>" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold" title="Send WhatsApp Greeting">
+                                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                                </a>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-day fs-3 mb-2 opacity-50"></i>
+                            <p class="mb-0">No registered residents have a birthday today.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+
+
+
+<!-- ============ FOOTER ============ --> 
+<footer class="civic-footer"> 
+    <div class="container-fluid px-4 px-lg-5 text-center text-md-start d-flex justify-content-between align-items-center flex-wrap gap-3"> 
+        <div> 
+            <span class="footer-brand">Dattaham Nagar Municipal Directory</span> 
+            <span class="footer-version">v2.4</span> 
+            <span class="footer-sep">&middot;</span> 
+            <span class="footer-meta">Government Municipal Analytics System</span> 
+        </div> 
+        <div class="footer-meta d-flex align-items-center gap-3"> 
+            <span class="status-chip"><i class="fas fa-circle"></i> MongoDB Connected</span> 
+            <span>Server Time: <span id="serverClock" class="mono-tag"></span></span> 
+        </div> 
+    </div> 
+</footer> 
+
+<!-- Chart.js & Clock Script --> 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+<script> 
+    // Live Clock 
+    setInterval(() => { 
+        document.getElementById('serverClock').innerText = new Date().toLocaleTimeString(); 
+    }, 1000); 
+
+    // Parse Data from Controller 
+    const ageData = <%- ageData %>; 
+    const bloodLabels = <%- bloodLabels %>; 
+    const bloodData = <%- bloodData %>; 
+
+    // Shared civic palette for charts 
+    const civicNavy = '#0F2A44'; 
+    const civicBrass = '#B8862E'; 
+    const civicSlate = '#5B7086'; 
+    const civicBrick = '#A3432F'; 
+    const civicSage = '#4C7A5E'; 
+
+    Chart.defaults.font.family = "'Inter', sans-serif"; 
+    Chart.defaults.color = '#5B6472'; 
+
+    // Age Demographics Bar Chart 
+    const ctxAge = document.getElementById('ageChart').getContext('2d'); 
+    new Chart(ctxAge, { 
+        type: 'bar', 
+        data: { 
+            labels: ['Children (0-15)', 'Adults (16-59)', 'Seniors (60+)'], 
+            datasets: [{ 
+                label: 'Population', 
+                data: ageData, 
+                backgroundColor: [civicNavy, civicBrass, civicSlate], 
+                borderRadius: 6, 
+                barThickness: 48 
+            }] 
+        }, 
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            scales: { 
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#EDEAE2' } }, 
+                x: { grid: { display: false } } 
+            }, 
+            plugins: { legend: { display: false } } 
+        } 
+    }); 
+
+    // Blood Group Doughnut Chart 
+    const ctxBlood = document.getElementById('bloodGroupChart').getContext('2d'); 
+    new Chart(ctxBlood, { 
+        type: 'doughnut', 
+        data: { 
+            labels: bloodLabels, 
+            datasets: [{ 
+                data: bloodData, 
+                backgroundColor: [civicBrick, civicNavy, civicSage, civicBrass, civicSlate, '#8A6BAF', '#8A97A6'], 
+                borderWidth: 3, 
+                borderColor: '#F7F4EE' 
+            }] 
+        }, 
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 14 } } }, 
+            cutout: '65%' 
+        } 
+    }); 
+</script> 
+
+<style> 
+    :root { 
+        --civic-navy: #0F2A44; 
+        --civic-navy-deep: #081A2C; 
+        --civic-slate: #3A5169; 
+        --civic-brass: #B8862E; 
+        --civic-brass-light: #E7D3A1; 
+        --civic-brick: #A3432F; 
+        --civic-sage: #4C7A5E; 
+        --civic-parchment: #F7F4EE; 
+        --civic-paper: #FFFFFF; 
+        --civic-line: #E4DFD3; 
+        --civic-ink: #1C2530; 
+        --civic-ink-muted: #5B6472; 
+        --font-display: 'Fraunces', serif; 
+        --font-body: 'Inter', sans-serif; 
+        --font-mono: 'IBM Plex Mono', monospace; 
+    } 
+    .civic-dashboard { 
+        background-color: var(--civic-parchment); 
+        min-height: calc(100vh - 76px); 
+        font-family: var(--font-body); 
+        color: var(--civic-ink); 
+    } 
+    .welcome-band { 
+        background: linear-gradient(135deg, var(--civic-navy) 0%, var(--civic-navy-deep) 100%); 
+        border-radius: 18px; 
+        padding: 28px 32px; 
+        color: #fff; 
+        box-shadow: 0 8px 24px -8px rgba(15, 42, 68, 0.35); 
+    } 
+    .seal-badge { 
+        width: 56px; height: 56px; 
+        border-radius: 50%; 
+        border: 1.5px solid rgba(184, 134, 46, 0.55); 
+        display: flex; align-items: center; justify-content: center; 
+        color: var(--civic-brass-light); 
+        font-size: 1.4rem; 
+        flex-shrink: 0; 
+        background: rgba(255,255,255,0.04); 
+    } 
+    .eyebrow { 
+        display: block; 
+        font-family: var(--font-mono); 
+        font-size: 0.68rem; 
+        letter-spacing: 0.12em; 
+        text-transform: uppercase; 
+        color: var(--civic-brass-light); 
+        margin-bottom: 4px; 
+    } 
+    .welcome-title { 
+        font-family: var(--font-display); 
+        font-weight: 600; 
+        font-size: 1.85rem; 
+        margin: 0 0 4px 0; 
+        color: #fff; 
+    } 
+    .welcome-sub { 
+        color: rgba(255,255,255,0.72); 
+        font-size: 0.92rem; 
+    } 
+    .btn-civic-primary { 
+        background: var(--civic-brass); 
+        border: 1px solid var(--civic-brass); 
+        color: #241a06; 
+        font-weight: 600; 
+        border-radius: 10px; 
+        padding: 10px 20px; 
+        font-size: 0.9rem; 
+        display: inline-flex; align-items: center; gap: 8px; 
+        transition: transform 0.15s ease, box-shadow 0.15s ease; 
+    } 
+    .btn-civic-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px -4px rgba(184,134,46,0.5); color: #241a06; } 
+    .btn-civic-outline { 
+        background: transparent; 
+        border: 1px solid rgba(255,255,255,0.3); 
+        color: #fff; 
+        font-weight: 600; 
+        border-radius: 10px; 
+        padding: 10px 20px; 
+        font-size: 0.9rem; 
+        display: inline-flex; align-items: center; gap: 8px; 
+        transition: background 0.15s ease, transform 0.15s ease; 
+    } 
+    .btn-civic-outline:hover { background: rgba(255,255,255,0.08); color: #fff; transform: translateY(-1px); } 
+    .civic-breadcrumb { 
+        background: transparent; 
+        font-size: 0.8rem; 
+    } 
+    .civic-breadcrumb .breadcrumb-item, .civic-breadcrumb .breadcrumb-item a { 
+        color: rgba(255,255,255,0.55); 
+    } 
+    .civic-breadcrumb .breadcrumb-item.active { color: rgba(255,255,255,0.9); } 
+    .civic-breadcrumb .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,0.35); } 
+    .section-label { 
+        display: flex; align-items: center; gap: 12px; 
+        margin: 8px 0 14px 0; 
+    } 
+    .section-label span { 
+        font-family: var(--font-mono); 
+        font-size: 0.72rem; 
+        letter-spacing: 0.1em; 
+        text-transform: uppercase; 
+        color: var(--civic-slate); 
+        white-space: nowrap; 
+    } 
+    .section-label::after { 
+        content: ''; 
+        flex: 1; 
+        height: 1px; 
+        background: var(--civic-line); 
+    } 
+    .ledger-card { 
+        background: var(--civic-paper); 
+        border: 1px solid var(--civic-line); 
+        border-radius: 12px; 
+        overflow: hidden; 
+        transition: transform 0.18s ease, box-shadow 0.18s ease; 
+    } 
+    .ledger-card:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 12px 24px -10px rgba(15, 42, 68, 0.18); 
+    } 
+    .ledger-card-top { height: 4px; } 
+    .ledger-card-top[data-tone="navy"] { background: var(--civic-navy); } 
+    .ledger-card-top[data-tone="brass"] { background: var(--civic-brass); } 
+    .ledger-card-top[data-tone="slate"] { background: var(--civic-slate); } 
+    .ledger-card-top[data-tone="brick"] { background: var(--civic-brick); } 
+    .ledger-card-body { padding: 18px 20px 20px; } 
+    .seal-icon { 
+        width: 40px; height: 40px; 
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 0.95rem; 
+        border: 1.5px solid currentColor; 
+    } 
+    .seal-icon[data-tone="navy"] { color: var(--civic-navy); background: rgba(15,42,68,0.06); } 
+    .seal-icon[data-tone="brass"] { color: var(--civic-brass); background: rgba(184,134,46,0.09); } 
+    .seal-icon[data-tone="slate"] { color: var(--civic-slate); background: rgba(58,81,105,0.07); } 
+    .seal-icon[data-tone="brick"] { color: var(--civic-brick); background: rgba(163,67,47,0.08); } 
+    .pct-chip { 
+        font-family: var(--font-mono); 
+        font-size: 0.72rem; 
+        color: var(--civic-ink-muted); 
+        background: var(--civic-parchment); 
+        border: 1px solid var(--civic-line); 
+        border-radius: 20px; 
+        padding: 3px 10px; 
+    } 
+    .pct-chip-label { opacity: 0.6; } 
+    .ledger-label { 
+        display: block; 
+        font-size: 0.72rem; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 0.05em; 
+        color: var(--civic-ink-muted); 
+        margin-bottom: 4px; 
+    } 
+    .ledger-figure { 
+        font-family: var(--font-display); 
+        font-weight: 600; 
+        font-size: 2.1rem; 
+        color: var(--civic-ink); 
+        line-height: 1.1; 
+        margin-bottom: 6px; 
+        font-variant-numeric: tabular-nums; 
+    } 
+    .ledger-desc { 
+        font-size: 0.8rem; 
+        color: var(--civic-ink-muted); 
+        margin: 0; 
+    } 
+    .insight-strip { 
+        background: var(--civic-paper); 
+        border: 1px solid var(--civic-line); 
+        border-top: 3px solid var(--civic-brass); 
+        border-radius: 12px; 
+        overflow: hidden; 
+    } 
+    .insight-cell { 
+        padding: 20px 22px; 
+        border-right: 1px solid var(--civic-line); 
+        border-bottom: 1px solid var(--civic-line); 
+    } 
+    @media (min-width: 768px) { 
+        .insight-cell-last, .insight-cell:nth-child(4) { border-right: none; } 
+        .insight-cell { border-bottom: none; } 
+    } 
+    .insight-label { 
+        display: block; 
+        font-size: 0.72rem; 
+        text-transform: uppercase; 
+        letter-spacing: 0.06em; 
+        color: var(--civic-ink-muted); 
+        margin-bottom: 6px; 
+    } 
+    .insight-value { 
+        font-family: var(--font-display); 
+        font-weight: 600; 
+        font-size: 1.6rem; 
+        color: var(--civic-navy); 
+    } 
+    .insight-value-sm { font-size: 1.1rem; } 
+    .insight-unit { font-family: var(--font-body); font-weight: 500; font-size: 0.85rem; color: var(--civic-ink-muted); } 
+    .civic-panel { 
+        background: var(--civic-paper); 
+        border: 1px solid var(--civic-line); 
+        border-radius: 14px; 
+    } 
+    .civic-panel-header { 
+        padding: 20px 22px 4px; 
+    } 
+    .panel-title { 
+        font-family: var(--font-display); 
+        font-weight: 600; 
+        font-size: 1.15rem; 
+        color: var(--civic-ink); 
+        margin-bottom: 2px; 
+    } 
+    .panel-sub { 
+        font-size: 0.82rem; 
+        color: var(--civic-ink-muted); 
+        margin: 0; 
+    } 
+    .civic-panel-body { 
+        padding: 16px 22px 22px; 
+    } 
+    .activity-row { 
+        display: flex; align-items: flex-start; gap: 14px; 
+        padding: 14px 0; 
+        border-bottom: 1px solid var(--civic-line); 
+    } 
+    .activity-row:last-child { border-bottom: none; } 
+    .activity-icon { 
+        width: 38px; height: 38px; 
+        border-radius: 10px; 
+        display: flex; align-items: center; justify-content: center; 
+        flex-shrink: 0; 
+        font-size: 0.85rem; 
+    } 
+    .activity-icon[data-tone="brass"] { background: rgba(184,134,46,0.1); color: var(--civic-brass); } 
+    .activity-icon[data-tone="navy"] { background: rgba(15,42,68,0.08); color: var(--civic-navy); } 
+    .activity-title { 
+        font-size: 0.92rem; 
+        font-weight: 600; 
+        color: var(--civic-ink); 
+        margin: 0 0 3px 0; 
+    } 
+    .activity-tag { 
+        font-family: var(--font-mono); 
+        font-size: 0.65rem; 
+        font-weight: 500; 
+        color: var(--civic-ink-muted); 
+        background: var(--civic-parchment); 
+        border: 1px solid var(--civic-line); 
+        border-radius: 6px; 
+        padding: 2px 7px; 
+        margin-left: 6px; 
+        text-transform: none; 
+    } 
+    .activity-tag-id { color: var(--civic-navy); } 
+    .activity-meta { 
+        font-size: 0.8rem; 
+        color: var(--civic-ink-muted); 
+        margin: 0; 
+    } 
+    .empty-state { 
+        text-align: center; 
+        padding: 40px 20px; 
+        color: var(--civic-ink-muted); 
+    } 
+    .empty-state i { font-size: 1.6rem; margin-bottom: 10px; display: block; opacity: 0.5; } 
+    .empty-state p { margin: 0; font-size: 0.88rem; } 
+    .quick-action { 
+        display: flex; align-items: center; justify-content: space-between; 
+        padding: 14px 16px; 
+        border: 1px solid var(--civic-line); 
+        border-radius: 10px; 
+        text-decoration: none; 
+        color: var(--civic-ink); 
+        font-weight: 600; 
+        font-size: 0.9rem; 
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease; 
+    } 
+    .quick-action i:first-child { margin-right: 10px; color: var(--civic-brass); } 
+    .quick-action:hover { 
+        background: var(--civic-parchment); 
+        border-color: var(--civic-brass); 
+        color: var(--civic-ink); 
+        transform: translateX(2px); 
+    } 
+    .quick-action-arrow { color: var(--civic-ink-muted); font-size: 0.75rem; } 
+    .gps-chip { 
+        font-family: var(--font-mono); 
+        font-size: 0.75rem; 
+        background: rgba(76,122,94,0.1); 
+        color: var(--civic-sage); 
+        border: 1px solid rgba(76,122,94,0.25); 
+        border-radius: 20px; 
+        padding: 5px 12px; 
+    } 
+    .civic-footer { 
+        background: var(--civic-paper); 
+        border-top: 1px solid var(--civic-line); 
+        padding: 20px 0; 
+        margin-top: 32px; 
+        font-size: 0.85rem; 
+    } 
+    .footer-brand { font-weight: 700; color: var(--civic-ink); } 
+    .footer-version { color: var(--civic-brass); font-family: var(--font-mono); font-size: 0.78rem; margin-left: 4px; } 
+    .footer-sep { color: var(--civic-line); margin: 0 6px; } 
+    .footer-meta { color: var(--civic-ink-muted); } 
+    .status-chip { color: var(--civic-sage); font-size: 0.8rem; } 
+    .status-chip i { font-size: 0.5rem; margin-right: 5px; } 
+    .mono-tag { font-family: var(--font-mono); font-weight: 500; color: var(--civic-ink); } 
+    a:focus-visible, button:focus-visible { 
+        outline: 2px solid var(--civic-brass); 
+        outline-offset: 2px; 
+    } 
+    @media (prefers-reduced-motion: reduce) { 
+        .ledger-card, .quick-action { transition: none; } 
+    } 
+    @media (max-width: 576px) { 
+        .welcome-band { padding: 22px 20px; } 
+        .welcome-title { font-size: 1.4rem; } 
+        .header-actions { width: 100%; } 
+        .header-actions .btn-civic-primary, .header-actions .btn-civic-outline { flex: 1; justify-content: center; } 
+    } 
+</style> 
+
+<%- include('partials/footer') %>

@@ -1,0 +1,126 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-user-edit me-2"></i>Edit Resident</h4>
+            <a href="/residents/<%= resident._id %>" class="btn btn-outline-secondary rounded-pill px-3">Cancel</a>
+        </div>
+
+        <div class="card-body p-4 bg-light">
+            <form action="/residents/<%= resident._id %>/edit" method="POST">
+                
+                <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">1. Personal & Contact</h6>
+                <div class="row g-3 mb-4 bg-white p-3 shadow-sm rounded">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Full Name *</label>
+                        <input type="text" name="fullName" class="form-control" value="<%= resident.fullName %>" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Relationship *</label>
+                        <input type="text" name="relationship" class="form-control" value="<%= resident.relationship %>" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Gender *</label>
+                        <select name="gender" class="form-select" required>
+                            <option value="Male" <%= resident.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                            <option value="Female" <%= resident.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                            <option value="Other" <%= resident.gender === 'Other' ? 'selected' : '' %>>Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Primary Mobile *</label>
+                        <input type="tel" name="mobile" class="form-control" value="<%= resident.mobile %>" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Secondary Mobile</label>
+                        <input type="tel" name="secondaryMobile" class="form-control" value="<%= resident.secondaryMobile || '' %>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">WhatsApp</label>
+                        <input type="tel" name="whatsappNumber" class="form-control" value="<%= resident.whatsappNumber || '' %>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Occupation</label>
+                        <select name="occupationType" class="form-select">
+                            <option value="<%= resident.occupationType %>" selected><%= resident.occupationType || 'Select...' %></option>
+                            <option value="Salaried Employee">Salaried Employee</option><option value="Business">Business</option><option value="Housewife">Housewife</option><option value="Student">Student</option><option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">2. Health & Civic</h6>
+                <div class="row g-3 bg-white p-3 shadow-sm rounded">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Blood Group</label>
+                        <select name="bloodGroup" class="form-select">
+                            <option value="<%= resident.bloodGroup || 'Unknown' %>" selected><%= resident.bloodGroup || 'Unknown' %></option>
+                            <option value="A+">A+</option><option value="O+">O+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-danger">Disability?</label>
+                        <select name="hasDisability" class="form-select border-danger">
+                            <option value="true" <%= resident.hasDisability ? 'selected' : '' %>>Yes</option>
+                            <option value="false" <%= !resident.hasDisability ? 'selected' : '' %>>No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Perm. Resident?</label>
+                        <select name="isPermanentResident" class="form-select">
+                            <option value="true" <%= resident.isPermanentResident ? 'selected' : '' %>>Yes</option>
+                            <option value="false" <%= !resident.isPermanentResident ? 'selected' : '' %>>No</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 mt-3 pt-3 border-top">
+                        <label class="form-label fw-bold small text-primary">Does this member have a Voter ID?</label>
+                        <select name="hasVoterId" class="form-select w-auto border-primary" onchange="document.getElementById('memberVoterFields').style.display = this.value === 'true' ? 'flex' : 'none'">
+                            <option value="true" <%= resident.hasVoterId ? 'selected' : '' %>>Yes</option>
+                            <option value="false" <%= !resident.hasVoterId ? 'selected' : '' %>>No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row g-3 mt-1" id="memberVoterFields" style="display:<%= resident.hasVoterId ? 'flex' : 'none' %>;">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">EPIC Number</label>
+                            <input type="text" name="epicNumber" class="form-control" value="<%= resident.epicNumber || '' %>">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">Roll Serial No.</label>
+                            <input type="text" name="rollSerialNumber" class="form-control" value="<%= resident.rollSerialNumber || '' %>">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">Booth/Part</label>
+                            <input type="text" name="boothPartNumber" class="form-control" value="<%= resident.boothPartNumber || '' %>">
+                        </div>
+                    </div>
+
+                    <% if (isSuperAdmin) { %>
+                    <div class="col-12 mt-4">
+                        <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded">
+                            <h6 class="text-warning-emphasis fw-bold mb-2 small"><i class="fas fa-shield-alt"></i> Secure Identity (Admin Only)</h6>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <input type="text" name="panNumber" class="form-control font-monospace" placeholder="PAN Number" value="<%= resident.panNumber || '' %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" name="aadhaarNumber" class="form-control font-monospace" placeholder="Aadhaar Number" value="<%= resident.aadhaarNumber || '' %>">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+                
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-success px-5 fw-bold rounded-pill shadow-sm"><i class="fas fa-save me-2"></i>Save Resident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

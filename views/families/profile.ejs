@@ -1,0 +1,491 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="apple-bg-ambient">
+<div class="profile-wrapper">
+    <div class="container-xl px-3 px-md-4 px-xl-5 mx-auto pb-5">
+
+        <!-- 1. HEADER & ACTION BAR -->
+        <div class="premium-glass-card mb-4 p-4 p-md-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
+                <div class="d-flex align-items-start align-items-md-center gap-3">
+                    <div class="header-icon-box text-primary shadow-sm flex-shrink-0">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="d-flex flex-column text-start">
+                        <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+                            <h2 class="mb-0 fw-bold text-dark" style="font-family: 'Fraunces', serif; letter-spacing: -0.02em;">Family Profile</h2>
+                            <span class="ios-badge bg-primary text-white shadow-sm font-monospace">
+                                <i class="fas fa-fingerprint me-1 opacity-75"></i> <%= family.familyId %>
+                            </span>
+                        </div>
+                        <div class="text-muted small fw-medium mt-1 d-flex align-items-center gap-2 text-start">
+                            <i class="fas fa-map-marker-alt text-danger"></i> 
+                            <span><%= family.fullAddress %> (PIN: <%= family.pinCode %>)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
+                    <a href="/families" class="btn btn-ios-outline flex-fill flex-md-grow-0">
+                        <i class="fas fa-arrow-left me-2"></i> Directory
+                    </a>
+                    <a href="/families/<%= family._id %>/edit" class="btn btn-ios-solid flex-fill flex-md-grow-0">
+                        <i class="fas fa-edit me-2"></i> Edit Details
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. DEMOGRAPHIC STATS (Horizontal Scroll on Mobile) -->
+        <div class="row g-3 mb-4 mobile-scroll-row">
+            <div class="col-4 col-md-2 scroll-item">
+                <div class="premium-glass-card text-center p-3 h-100">
+                    <span class="stat-label">Total</span>
+                    <h3 class="stat-value text-primary"><%= family.memberCount %></h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-2 scroll-item">
+                <div class="premium-glass-card text-center p-3 h-100">
+                    <span class="stat-label">Males</span>
+                    <h3 class="stat-value text-info"><%= stats.males %></h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-2 scroll-item">
+                <div class="premium-glass-card text-center p-3 h-100">
+                    <span class="stat-label">Females</span>
+                    <h3 class="stat-value text-danger"><%= stats.females %></h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-2 scroll-item">
+                <div class="premium-glass-card text-center p-3 h-100 opacity-75">
+                    <span class="stat-label">Kids (0-15)</span>
+                    <h3 class="stat-value text-dark"><%= stats.children %></h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-2 scroll-item">
+                <div class="premium-glass-card text-center p-3 h-100 opacity-75">
+                    <span class="stat-label">Adults (16-59)</span>
+                    <h3 class="stat-value text-dark"><%= stats.adults %></h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-2 scroll-item">
+                <div class="premium-glass-card text-center p-3 h-100 opacity-75">
+                    <span class="stat-label">Seniors (60+)</span>
+                    <h3 class="stat-value text-dark"><%= stats.seniors %></h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. MAIN CONTENT GRID -->
+        <div class="row g-4">
+            
+            <!-- LEFT COLUMN: HEAD OF FAMILY & MAP -->
+            <div class="col-lg-4 d-flex flex-column gap-4">
+                
+                <!-- Head of Family Card -->
+                <div class="premium-glass-card p-0 overflow-hidden d-flex flex-column">
+                    <div class="glass-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold text-dark mb-0"><i class="fas fa-crown text-warning me-2"></i> Head of Family</h6>
+                        <span class="ios-badge-soft bg-warning text-dark border-warning">Primary</span>
+                    </div>
+                    
+                    <div class="p-4 text-center">
+                        <div class="avatar-hero bg-white text-primary shadow-sm border border-light mx-auto mb-3">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1" style="font-family: 'Fraunces', serif;"><%= headOfFamily ? headOfFamily.fullName : 'Not Assigned' %></h4>
+                        <p class="text-muted small fw-medium mb-3"><%= headOfFamily ? (headOfFamily.occupationType === 'Other' ? headOfFamily.occupationOther : headOfFamily.occupationType) : 'Occupation N/A' %></p>
+                        
+                        <% if (headOfFamily) { %>
+                            <div class="phone-pill shadow-sm mb-4">
+                                <i class="fas fa-phone-alt text-success"></i>
+                                <span><%= headOfFamily.mobile %></span>
+                            </div>
+                        <% } %>
+
+                        <!-- iOS Style Data Rows -->
+                        <div class="ios-data-group text-start">
+                            <div class="ios-data-row border-bottom border-light">
+                                <span class="ios-data-label">Voter EPIC ID</span>
+                                <span class="ios-data-value font-monospace"><%= (headOfFamily && headOfFamily.epicNumber) ? headOfFamily.epicNumber : 'Not Registered' %></span>
+                            </div>
+                            <div class="ios-data-row border-bottom border-light">
+                                <span class="ios-data-label">Ward Number</span>
+                                <span class="ios-data-value">Ward <%= family.wardNumber || 'N/A' %></span>
+                            </div>
+                            <div class="ios-data-row">
+                                <span class="ios-data-label">Years in Nagar</span>
+                                <span class="ios-data-value"><%= family.yearsLived || 'Not Specified' %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & GPS Card -->
+                <div class="premium-glass-card p-0 overflow-hidden">
+                    <div class="glass-card-header">
+                        <h6 class="fw-bold text-dark mb-0"><i class="fas fa-map-marked-alt text-danger me-2"></i> Location &amp; Map</h6>
+                    </div>
+                    <div class="p-4">
+                        <div class="ios-data-group mb-4">
+                            <div class="ios-data-row border-bottom border-light">
+                                <span class="ios-data-label">Landmark</span>
+                                <span class="ios-data-value text-end"><%= family.landmark || 'None specified' %></span>
+                            </div>
+                            <div class="ios-data-row">
+                                <span class="ios-data-label">Remarks</span>
+                                <span class="ios-data-value text-end fw-normal text-muted"><%= family.remarks || 'No remarks added.' %></span>
+                            </div>
+                        </div>
+                        
+                        <% if (family.location && family.location.lat) { %>
+                            <div class="map-wrapper shadow-sm border border-light">
+                                <iframe src="https://maps.google.com/maps?q=<%= family.location.lat %>,<%= family.location.lng %>&z=16&output=embed" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                            </div>
+                            <a href="https://www.google.com/maps/search/?api=1&query=<%= family.location.lat %>,<%= family.location.lng %>" target="_blank" class="btn btn-ios-outline w-100 mt-3 shadow-sm">
+                                <i class="fas fa-location-arrow text-primary me-2"></i> Open in Maps
+                            </a>
+                        <% } else { %>
+                            <div class="empty-state-card text-center">
+                                <i class="fas fa-map-slash text-muted fs-2 mb-2 opacity-50"></i>
+                                <span class="d-block fw-semibold text-muted">GPS Pin Missing</span>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: MEMBERS DIRECTORY -->
+            <div class="col-lg-8">
+                <div class="premium-glass-card p-0 h-100 d-flex flex-column overflow-hidden">
+                    
+                    <!-- Directory Header -->
+                    <div class="glass-card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                        <div class="text-start">
+                            <h5 class="fw-bold text-dark mb-1" style="font-family: 'Fraunces', serif;"><i class="fas fa-users text-primary me-2"></i> Household Members</h5>
+                            <p class="text-muted small fw-medium mb-0">Manage all residents in this unit.</p>
+                        </div>
+                        <button class="btn btn-ios-solid shadow-sm flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                            <i class="fas fa-user-plus me-2"></i> Add Member
+                        </button>
+                    </div>
+
+                    <!-- App-Like Member List -->
+                    <div class="p-3 p-md-4 flex-grow-1 bg-white bg-opacity-25">
+                        <div class="d-flex flex-column gap-3">
+                            
+                            <!-- Head of Family Row -->
+                            <% if (headOfFamily) { %>
+                                <div class="member-card shadow-sm border-primary border-opacity-25">
+                                    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                                        
+                                        <!-- Identity Group -->
+                                        <div class="d-flex align-items-center gap-3 flex-grow-1 text-start">
+                                            <div class="member-avatar bg-primary text-white shadow-sm">
+                                                <%= headOfFamily.fullName.charAt(0).toUpperCase() %>
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                                    <span class="fw-bold text-dark fs-6"><%= headOfFamily.fullName %></span>
+                                                    <span class="ios-badge-soft bg-warning text-dark border-warning" style="font-size: 0.6rem;">HoF</span>
+                                                </div>
+                                                <span class="text-muted small fw-medium"><i class="fas fa-phone-alt me-1 text-success opacity-75"></i> <%= headOfFamily.mobile %></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Demographics & Action -->
+                                        <div class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 mt-2 mt-sm-0 pt-2 pt-sm-0 border-top border-sm-0 border-light w-100 w-sm-auto">
+                                            <div class="text-start text-sm-end">
+                                                <span class="d-block text-dark fw-bold small"><%= headOfFamily.age %> yrs</span>
+                                                <span class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;"><%= headOfFamily.gender %></span>
+                                            </div>
+                                            <div class="blood-pill shadow-sm">
+                                                <%= headOfFamily.bloodGroup || '?' %>
+                                            </div>
+                                            <a href="/residents/<%= headOfFamily._id %>" class="btn btn-sm btn-ios-outline rounded-pill px-3 ms-2">View</a>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            <% } %>
+
+                            <!-- Dependents Rows -->
+                            <% dependents.forEach(member => { %>
+                                <div class="member-card shadow-sm">
+                                    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                                        
+                                        <!-- Identity Group -->
+                                        <div class="d-flex align-items-center gap-3 flex-grow-1 text-start">
+                                            <div class="member-avatar bg-white text-dark border border-light shadow-sm">
+                                                <%= member.fullName.charAt(0).toUpperCase() %>
+                                            </div>
+                                            <div class="d-flex flex-column">
+                                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                                    <span class="fw-bold text-dark fs-6"><%= member.fullName %></span>
+                                                    <span class="ios-badge-soft bg-secondary bg-opacity-10 text-secondary border-secondary" style="font-size: 0.6rem;"><%= member.relationship %></span>
+                                                </div>
+                                                <span class="text-muted small fw-medium"><i class="fas fa-phone-alt me-1 text-success opacity-75"></i> <%= member.mobile || 'No Mobile' %></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Demographics & Action -->
+                                        <div class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 mt-2 mt-sm-0 pt-2 pt-sm-0 border-top border-sm-0 border-light w-100 w-sm-auto">
+                                            <div class="text-start text-sm-end">
+                                                <span class="d-block text-dark fw-bold small"><%= member.age %> yrs</span>
+                                                <span class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;"><%= member.gender %></span>
+                                            </div>
+                                            <div class="blood-pill shadow-sm">
+                                                <%= member.bloodGroup || '?' %>
+                                            </div>
+                                            <a href="/residents/<%= member._id %>" class="btn btn-sm btn-ios-outline rounded-pill px-3 ms-2">View</a>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            <% }) %>
+
+                            <% if(!headOfFamily && dependents.length === 0) { %>
+                                <div class="empty-state-card py-5 mt-2">
+                                    <i class="fas fa-user-slash text-muted fs-1 mb-3 opacity-50"></i>
+                                    <h6 class="fw-bold text-dark mb-1">No Members Yet</h6>
+                                    <p class="text-muted small mb-0">Use the 'Add Member' button to register individuals.</p>
+                                </div>
+                            <% } %>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ================= COMPREHENSIVE ADD MEMBER MODAL ================= -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content premium-modal border-0 shadow-lg">
+            
+            <div class="modal-header border-bottom border-light px-4 px-md-5 py-4">
+                <h5 class="modal-title fw-bold text-dark" style="font-family: 'Fraunces', serif;"><i class="fas fa-user-plus text-primary me-2"></i> Add Family Member</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form action="/families/<%= family._id %>/add-member" method="POST">
+                <div class="modal-body p-4 p-md-5 bg-white bg-opacity-50 text-start">
+                    
+                    <h6 class="modal-section-title">1. Personal &amp; Contact Info</h6>
+                    <div class="row g-3 mb-5 ios-form-group">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small text-muted">Full Name *</label>
+                            <input type="text" name="fullName" class="form-control ios-input" required placeholder="Legal name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Relation to Head *</label>
+                            <select name="relationship" class="form-select ios-input" required>
+                                <option value="">Select...</option>
+                                <option value="Wife">Wife</option><option value="Husband">Husband</option>
+                                <option value="Son">Son</option><option value="Daughter">Daughter</option>
+                                <option value="Father">Father</option><option value="Mother">Mother</option>
+                                <option value="Brother">Brother</option><option value="Sister">Sister</option>
+                                <option value="Other">Other Dependent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small text-muted">Date of Birth *</label>
+                            <input type="date" name="dob" class="form-control ios-input" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small text-muted">Gender *</label>
+                            <select name="gender" class="form-select ios-input" required>
+                                <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Mobile</label>
+                            <input type="tel" name="mobile" class="form-control ios-input" pattern="[0-9]{10}" placeholder="10 digits">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">WhatsApp</label>
+                            <input type="tel" name="whatsappNumber" class="form-control ios-input" pattern="[0-9]{10}" placeholder="10 digits">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Occupation</label>
+                            <select name="occupationType" class="form-select ios-input">
+                                <option value="Student">Student</option><option value="Salaried Employee">Salaried Employee</option>
+                                <option value="Business">Business</option><option value="Housewife">Housewife</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Education</label>
+                            <select name="education" class="form-select ios-input">
+                                <option value="Secondary">Secondary</option><option value="Graduate">Graduate</option>
+                                <option value="Post Graduate">Post Graduate</option><option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="modal-section-title">2. Civic &amp; Identity</h6>
+                    <div class="row g-3 ios-form-group">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted">Blood Group</label>
+                            <select name="bloodGroup" class="form-select ios-input">
+                                <option value="Unknown">Unknown</option>
+                                <option value="A+">A+</option><option value="B+">B+</option><option value="O+">O+</option><option value="AB+">AB+</option>
+                                <option value="A-">A-</option><option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-danger">Has Disability?</label>
+                            <select name="hasDisability" class="form-select ios-input border-danger border-opacity-50 text-danger fw-semibold">
+                                <option value="false">No</option><option value="true">Yes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Permanent Resident?</label>
+                            <select name="isPermanentResident" class="form-select ios-input">
+                                <option value="true">Yes - Permanent Resident</option><option value="false">No - Temporary</option>
+                            </select>
+                        </div>
+
+                        <!-- Voter List Section -->
+                        <div class="col-12 mt-4">
+                            <div class="p-3 p-md-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-4">
+                                <label class="form-label fw-bold small text-primary mb-3">Has Voter ID (EPIC)?</label>
+                                <select name="hasVoterId" class="form-select ios-input mb-3" style="max-width: 250px;" onchange="document.getElementById('modalVoterFields').style.display = this.value === 'true' ? 'flex' : 'none'">
+                                    <option value="false">No</option><option value="true">Yes</option>
+                                </select>
+                                <div class="row g-3" id="modalVoterFields" style="display:none;">
+                                    <div class="col-md-4"><input type="text" name="epicNumber" class="form-control ios-input" placeholder="EPIC No."></div>
+                                    <div class="col-md-4"><input type="text" name="rollSerialNumber" class="form-control ios-input" placeholder="Roll No."></div>
+                                    <div class="col-md-4"><input type="text" name="boothPartNumber" class="form-control ios-input" placeholder="Booth No."></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Secure Identifiers Section -->
+                        <div class="col-12 mt-3">
+                            <div class="p-3 p-md-4 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-4">
+                                <h6 class="text-dark fw-bold small mb-2"><i class="fas fa-shield-alt text-warning me-2"></i> Secure Identity</h6>
+                                <p class="text-muted small mb-3">ID numbers are encrypted and restricted to authorized view.</p>
+                                <input type="text" name="aadhaarNumber" class="form-control ios-input font-monospace bg-white" placeholder="ID Number (12-Digit)" style="max-width: 300px;">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="modal-footer border-top border-light px-4 px-md-5 py-4 bg-white bg-opacity-75">
+                    <button type="button" class="btn btn-ios-outline px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-ios-solid px-5 rounded-pill"><i class="fas fa-save me-2"></i> Save Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Premium Ambient Background */
+    .apple-bg-ambient {
+        min-height: 100vh;
+        background-color: #f4f6f9;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
+        background-attachment: fixed;
+    }
+
+    /* Fixed Top Spacing for Navbar Clearance */
+    .profile-wrapper { padding-top: 6.5rem; }
+    @media (max-width: 767.98px) { .profile-wrapper { padding-top: 5.5rem; overflow-x: hidden; } }
+
+    /* Premium Glass Cards */
+    .premium-glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(30px) saturate(200%);
+        -webkit-backdrop-filter: blur(30px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,1);
+        padding: 1.5rem;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    @media (min-width: 768px) { .premium-glass-card { padding: 2rem; } }
+    
+    .glass-card-header {
+        padding: 1.25rem 1.5rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    @media (min-width: 1200px) { .glass-card-header { padding: 1.5rem 2rem; } }
+
+    /* Icons, Badges, & Avatars */
+    .header-icon-box { width: 50px; height: 50px; border-radius: 14px; background: #fff; border: 1px solid rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .avatar-hero { width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .member-avatar { width: 44px; height: 44px; min-width: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; }
+
+    .ios-badge { padding: 0.4rem 1rem; border-radius: 50px; font-weight: 600; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); }
+    .ios-badge-soft { padding: 0.25rem 0.75rem; border-radius: 50px; font-weight: 600; font-size: 0.7rem; border: 1px solid; }
+    .blood-pill { padding: 0.3rem 0.8rem; border-radius: 8px; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+    .phone-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; border: 1px solid #e2e8f0; padding: 0.5rem 1.25rem; border-radius: 50px; font-weight: 600; color: #0f172a; font-size: 0.95rem; }
+
+    /* Stats Row Typography */
+    .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; display: block; margin-bottom: 0.3rem; }
+    .stat-value { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 700; margin: 0; line-height: 1; }
+
+    /* iOS Style Data Rows */
+    .ios-data-group { background: rgba(255,255,255,0.6); border: 1px solid #e2e8f0; border-radius: 16px; padding: 0.5rem 1.25rem; }
+    .ios-data-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-color: rgba(0,0,0,0.06) !important; text-align: left; }
+    .ios-data-row:last-child { border: none !important; }
+    .ios-data-label { font-size: 0.85rem; font-weight: 600; color: #64748b; }
+    .ios-data-value { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
+
+    /* App-Like Member List */
+    .member-card { 
+        background: rgba(255,255,255,0.7); border: 1px solid #ffffff; 
+        border-radius: 16px; padding: 1rem 1.25rem; transition: all 0.2s ease; 
+    }
+    .member-card:hover { background: #ffffff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.04) !important; }
+
+    /* Map Box */
+    .map-wrapper { border-radius: 14px; overflow: hidden; height: 220px; }
+    .map-wrapper iframe { width: 100%; height: 100%; }
+
+    /* Empty States */
+    .empty-state-card { background: rgba(255,255,255,0.5); border: 1px dashed #cbd5e1; border-radius: 16px; text-align: center; padding: 2rem; }
+
+    /* Buttons */
+    .btn-ios-outline { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; transition: all 0.2s; }
+    .btn-ios-outline:hover { background: #ffffff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
+    .btn-ios-solid { background: #4f46e5; color: #ffffff; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(79,70,229,0.3); transition: all 0.2s; }
+    .btn-ios-solid:hover { background: #4338ca; color: #ffffff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.4); }
+
+    /* Modal Form Styling */
+    .premium-modal { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%); border-radius: 28px; overflow: hidden; }
+    .modal-section-title { font-size: 0.85rem; font-weight: 700; color: #475569; }
+    .ios-form-group { background: rgba(248, 250, 252, 0.5); padding: 1.5rem; border-radius: 20px; border: 1px solid #e2e8f0; }
+    .ios-input { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 0.65rem 1rem; font-size: 0.95rem; font-weight: 500; color: #0f172a; transition: all 0.2s ease; }
+    .ios-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+
+    /* Horizontal Scroll for Mobile Stats */
+    @media (max-width: 767.98px) {
+        .mobile-scroll-row {
+            display: flex; flex-wrap: nowrap !important; overflow-x: auto; overflow-y: hidden;
+            -webkit-overflow-scrolling: touch; padding-bottom: 1.5rem; margin-bottom: -0.5rem;
+            scroll-snap-type: x mandatory; scrollbar-width: none;
+        }
+        .mobile-scroll-row::-webkit-scrollbar { display: none; }
+        .scroll-item { scroll-snap-align: center; flex: 0 0 42%; }
+        .stat-value { font-size: 1.6rem; }
+    }
+</style>
+
+<%- include('../partials/footer') %>
