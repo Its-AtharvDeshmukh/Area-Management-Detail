@@ -61,4 +61,3 @@ const sendWelcomeMessage = async (mobileNumber, headName, familyId) => {
     }
 };
 
-module.exports = { sendWelcomeMessage };

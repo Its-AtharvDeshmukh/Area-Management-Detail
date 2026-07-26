@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Family = require('../models/Family');
 const Resident = require('../models/Resident');
-const { sendWelcomeMessage } = require('../utils/notifier'); // SMS Integrator
 
 exports.getAllFamilies = async (req, res) => {
     try {
@@ -37,7 +36,6 @@ exports.renderWizard = (req, res) => {
     res.render('families/wizard', { isSuperAdmin, mapToken: process.env.MAP_TOKEN });
 };
 
-// ROW-LEVEL SECURITY ADDED HERE
 exports.getEditFamily = async (req, res) => {
     try {
         const family = await Family.findById(req.params.id);
@@ -46,7 +44,6 @@ exports.getEditFamily = async (req, res) => {
         const isSuperAdmin = (req.session.user && req.session.user.role === 'super_admin') || req.session.admin !== undefined;
         const currentUsername = req.session.user ? req.session.user.username : (req.session.admin ? req.session.admin.username : null);
 
-        // Security Check: Block if not Super Admin AND not the original creator
         if (!isSuperAdmin && family.createdBy !== currentUsername) {
             return res.status(403).send("Access Denied: You can only edit family records you created.");
         }
@@ -94,10 +91,8 @@ exports.registerFamilyAndHoF = async (req, res) => {
         await session.commitTransaction();
         session.endSession();
 
-        // 🟢 FIRE AUTOMATED WELCOME MESSAGE
-        sendWelcomeMessage(payload.mobile, payload.fullName, savedFamily.familyId);
-
-        res.redirect(`/families/${savedFamily._id}`);
+        // Passes trigger flag for the free Click-to-Chat banner on the profile page
+        res.redirect(`/families/${savedFamily._id}?newRegistration=true`);
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
@@ -124,8 +119,9 @@ exports.getFamilyProfile = async (req, res) => {
 
         const isSuperAdmin = (req.session.user && req.session.user.role === 'super_admin') || req.session.admin !== undefined;
         const currentUser = req.session.user || req.session.admin;
-        res.render('families/profile', { family, headOfFamily, dependents, stats, members, isSuperAdmin, currentUser });
+        res.render('families/profile', { family, headOfFamily, dependents, stats, members, isSuperAdmin, currentUser, req });
     } catch (error) {
+        console.error(error);
         res.status(500).send("Error loading family profile");
     }
 };
@@ -154,11 +150,11 @@ exports.addFamilyMember = async (req, res) => {
         await Family.findByIdAndUpdate(familyId, { $inc: { memberCount: 1 } });
         res.redirect(`/families/${familyId}`);
     } catch (error) {
+        console.error(error);
         res.status(500).send("Error adding family member: " + error.message);
     }
 };
 
-// ROW-LEVEL SECURITY ADDED HERE
 exports.updateFamily = async (req, res) => {
     try {
         const family = await Family.findById(req.params.id);
