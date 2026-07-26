@@ -1,0 +1,114 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="apple-bg-ambient">
+    <div class="directory-wrapper">
+        <div class="container-xl px-3 px-md-4 pb-5">
+            
+            <!-- Header -->
+            <div class="premium-glass-card mb-4 p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="mb-1 fw-bold text-dark" style="font-family: 'Fraunces', serif;">
+                        <i class="fas fa-user-shield text-warning me-2"></i>Volunteer Management
+                    </h2>
+                    <p class="text-muted small mb-0 fw-medium">Super Admin control panel. Activate or suspend authorized volunteers.</p>
+                </div>
+            </div>
+
+            <!-- Users Table Card -->
+            <div class="premium-glass-card p-0 overflow-hidden shadow-sm">
+                <div class="table-responsive mb-0">
+                    <table class="table table-hover align-middle mb-0 custom-glass-table">
+                        <thead class="bg-white bg-opacity-50 border-bottom">
+                            <tr>
+                                <th class="ps-4 py-3 text-muted small fw-semibold text-uppercase">Volunteer Name</th>
+                                <th class="py-3 text-muted small fw-semibold text-uppercase">Email / Contact</th>
+                                <th class="py-3 text-muted small fw-semibold text-uppercase">Access Status</th>
+                                <th class="text-end pe-4 py-3 text-muted small fw-semibold text-uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (users && users.length > 0) { %>
+                                <% users.forEach(user => { %>
+                                    <tr class="glass-table-row">
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center me-3 fw-bold" style="width: 40px; height: 40px; min-width: 40px;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <div>
+                                                    <strong class="d-block text-dark mb-0"><%= user.username %></strong>
+                                                    <small class="text-muted font-monospace" style="font-size: 0.7rem;">ID: <%= user._id.toString().substring(0,8) %></small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 text-muted fw-medium"><%= user.email || 'N/A' %></td>
+                                        <td class="py-3">
+                                            <% if (user.isActive) { %>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
+                                                    <i class="fas fa-check-circle me-1"></i> Active
+                                                </span>
+                                            <% } else { %>
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-semibold">
+                                                    <i class="fas fa-ban me-1"></i> Suspended
+                                                </span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-end pe-4 py-3">
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <form action="/admin/users/<%= user._id %>/toggle" method="POST" class="m-0">
+                                                    <button type="submit" class="btn btn-sm <%= user.isActive ? 'btn-outline-warning' : 'btn-outline-success' %> rounded-pill px-3 fw-bold shadow-sm" style="min-width: 90px;">
+                                                        <%= user.isActive ? 'Suspend' : 'Activate' %>
+                                                    </button>
+                                                </form>
+                                                <form action="/admin/users/<%= user._id %>/delete" method="POST" class="m-0" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this volunteer?');">
+                                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="fas fa-users-slash fs-1 text-light mb-3 opacity-50"></i>
+                                        <h6 class="fw-bold">No Volunteers Found</h6>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .apple-bg-ambient {
+        min-height: 100vh;
+        background-color: #f4f6f9;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
+        background-attachment: fixed;
+    }
+    .directory-wrapper { padding-top: 6.5rem; }
+    @media (max-width: 767.98px) { .directory-wrapper { padding-top: 5.2rem; } }
+    .premium-glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,1);
+    }
+    .custom-glass-table { border-collapse: separate; border-spacing: 0; }
+    .glass-table-row { background: rgba(255,255,255,0.4); transition: background 0.2s; }
+    .glass-table-row:hover { background: rgba(255,255,255,0.9); }
+</style>
+
+<%- include('../partials/footer') %>

@@ -1,6 +1,17 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
+<%
+    const currentUsername = locals.currentUser ? currentUser.username : null;
+    const maskData = (data, recordCreator) => {
+        const canViewFull = (typeof isSuperAdmin !== 'undefined' && isSuperAdmin) || (recordCreator && recordCreator === currentUsername);
+        if (!data) return 'N/A';
+        if (canViewFull) return data;
+        const str = data.toString();
+        return str.length > 5 ? str.substring(0, 5) + 'xxxxx' : str;
+    };
+%>
+
 <div class="apple-bg-ambient">
 <div class="directory-wrapper">
     <div class="container-xl px-3 px-md-4 pb-5">
@@ -66,7 +77,8 @@
                                         </div>
                                     </td>
                                     <td class="py-3">
-                                        <i class="fas fa-phone-alt text-success small me-1"></i> <%= family.mobile || 'N/A' %>
+                                        <i class="fas fa-phone-alt text-success small me-1"></i> 
+                                        <%= family.headOfFamily ? maskData(family.headOfFamily.mobile, family.headOfFamily.createdBy) : 'N/A' %>
                                     </td>
                                     <td style="max-width: 250px;" class="text-truncate py-3" title="<%= family.fullAddress %>">
                                         <i class="fas fa-map-marker-alt text-danger small me-1"></i> <%= family.houseNumber %>, <%= family.streetArea %>
@@ -92,6 +104,7 @@
                 </table>
             </div>
         </div>
+
     </div>
 </div>
 </div>
@@ -107,7 +120,6 @@
     }
     .directory-wrapper { padding-top: 6.5rem; }
     @media (max-width: 767.98px) { .directory-wrapper { padding-top: 5.2rem; } }
-
     .premium-glass-card {
         background: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(25px) saturate(180%);
@@ -119,11 +131,9 @@
     
     .ios-input-group { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; }
     .ios-input-group .form-control { border: none; box-shadow: none; padding: 0.75rem 1rem; }
-
     .custom-glass-table { border-collapse: separate; border-spacing: 0; }
     .glass-table-row { background: rgba(255,255,255,0.4); transition: background 0.2s; }
     .glass-table-row:hover { background: rgba(255,255,255,0.9); }
-
     .btn-ios-outline { background: rgba(255,255,255,0.8); border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; transition: all 0.2s; }
     .btn-ios-outline:hover { background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .btn-ios-solid { background: #4f46e5; color: #ffffff; font-weight: 600; font-size: 0.9rem; padding: 0.6rem 1.4rem; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(79,70,229,0.3); transition: all 0.2s; }

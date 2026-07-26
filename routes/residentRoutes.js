@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const residentCtrl = require('../controllers/residentCtrl');
-const { isAuthenticated, isSuperAdmin } = require('../middlewares/auth');
+const { isAuthenticated } = require('../middlewares/auth');
 
 // Global Resident Directory
 router.get('/', isAuthenticated, residentCtrl.getAllResidents);
@@ -13,7 +13,7 @@ router.post('/:id/edit', isAuthenticated, residentCtrl.updateResident);
 // View Specific Resident Profile
 router.get('/:id', isAuthenticated, residentCtrl.getResidentProfile);
 
-// Delete Resident (Restricted to Super Admin)
-router.post('/:id/delete', isSuperAdmin, residentCtrl.deleteResident);
+// Delete Resident (Now protected by Row-Level Security in the Controller)
+router.post('/:id/delete', isAuthenticated, residentCtrl.deleteResident);
 
 module.exports = router;

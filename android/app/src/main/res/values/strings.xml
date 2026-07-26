@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">dattaham-nagar-directory</string>
+    <string name="title_activity_main">dattaham-nagar-directory</string>
+    <string name="package_name">Dattadham.app</string>
+    <string name="custom_url_scheme">Dattadham.app</string>
+</resources>

@@ -14,7 +14,9 @@ const familySchema = new mongoose.Schema({
         lng: { type: Number }
     },
     memberCount: { type: Number, default: 1 }, // Will auto-update
-    remarks: { type: String }
+    remarks: { type: String },
+    adminRemarks: { type: String },
+    createdBy: { type: String }
 }, { timestamps: true });
 
 // Virtual for Head of Family (to easily populate HoF later)

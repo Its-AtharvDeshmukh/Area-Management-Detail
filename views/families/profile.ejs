@@ -1,6 +1,23 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
+<%
+    const currentUsername = locals.currentUser ? currentUser.username : null;
+    
+    // Check if the current user created this specific Family Record
+    const isFamilyCreator = family.createdBy && family.createdBy === currentUsername;
+    const canViewFamilyFull = (typeof isSuperAdmin !== 'undefined' && isSuperAdmin) || isFamilyCreator;
+
+    // Masking Function (First 5 digits + xxxxx) for both Head of Family and Dependents
+    const maskData = (data, recordCreator) => {
+        const canViewFull = (typeof isSuperAdmin !== 'undefined' && isSuperAdmin) || (recordCreator && recordCreator === currentUsername);
+        if (!data) return 'N/A';
+        if (canViewFull) return data;
+        const str = data.toString();
+        return str.length > 5 ? str.substring(0, 5) + 'xxxxx' : str;
+    };
+%>
+
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -9,7 +26,7 @@
 <div class="apple-bg-ambient">
 <div class="profile-wrapper">
     <div class="container-xl px-3 px-md-4 px-xl-5 mx-auto pb-5">
-
+        
         <!-- 1. HEADER & ACTION BAR -->
         <div class="premium-glass-card mb-4 p-4 p-md-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
@@ -23,6 +40,11 @@
                             <span class="ios-badge bg-primary text-white shadow-sm font-monospace">
                                 <i class="fas fa-fingerprint me-1 opacity-75"></i> <%= family.familyId %>
                             </span>
+                            
+                            <!-- Notice Badge for Masked View -->
+                            <% if (!canViewFamilyFull) { %>
+                                <span class="badge bg-warning text-dark border-warning fw-bold ms-2"><i class="fas fa-lock me-1"></i> Masked View</span>
+                            <% } %>
                         </div>
                         <div class="text-muted small fw-medium mt-1 d-flex align-items-center gap-2 text-start">
                             <i class="fas fa-map-marker-alt text-danger"></i> 
@@ -30,18 +52,23 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="d-flex gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
                     <a href="/families" class="btn btn-ios-outline flex-fill flex-md-grow-0">
                         <i class="fas fa-arrow-left me-2"></i> Directory
                     </a>
+                    
+                    <!-- SECURE EDIT BUTTON: Only shows for creator or super admin -->
+                    <% if (canViewFamilyFull) { %>
                     <a href="/families/<%= family._id %>/edit" class="btn btn-ios-solid flex-fill flex-md-grow-0">
                         <i class="fas fa-edit me-2"></i> Edit Details
                     </a>
+                    <% } %>
                 </div>
             </div>
         </div>
 
-        <!-- 2. DEMOGRAPHIC STATS (Horizontal Scroll on Mobile) -->
+        <!-- 2. DEMOGRAPHIC STATS -->
         <div class="row g-3 mb-4 mobile-scroll-row">
             <div class="col-4 col-md-2 scroll-item">
                 <div class="premium-glass-card text-center p-3 h-100">
@@ -83,11 +110,9 @@
 
         <!-- 3. MAIN CONTENT GRID -->
         <div class="row g-4">
-            
             <!-- LEFT COLUMN: HEAD OF FAMILY & MAP -->
             <div class="col-lg-4 d-flex flex-column gap-4">
                 
-                <!-- Head of Family Card -->
                 <div class="premium-glass-card p-0 overflow-hidden d-flex flex-column">
                     <div class="glass-card-header d-flex justify-content-between align-items-center">
                         <h6 class="fw-bold text-dark mb-0"><i class="fas fa-crown text-warning me-2"></i> Head of Family</h6>
@@ -104,15 +129,16 @@
                         <% if (headOfFamily) { %>
                             <div class="phone-pill shadow-sm mb-4">
                                 <i class="fas fa-phone-alt text-success"></i>
-                                <span><%= headOfFamily.mobile %></span>
+                                <span><%= maskData(headOfFamily.mobile, headOfFamily.createdBy) %></span>
                             </div>
                         <% } %>
 
-                        <!-- iOS Style Data Rows -->
                         <div class="ios-data-group text-start">
                             <div class="ios-data-row border-bottom border-light">
                                 <span class="ios-data-label">Voter EPIC ID</span>
-                                <span class="ios-data-value font-monospace"><%= (headOfFamily && headOfFamily.epicNumber) ? headOfFamily.epicNumber : 'Not Registered' %></span>
+                                <span class="ios-data-value font-monospace">
+                                    <%= (headOfFamily && headOfFamily.epicNumber) ? maskData(headOfFamily.epicNumber, headOfFamily.createdBy) : 'Not Registered' %>
+                                </span>
                             </div>
                             <div class="ios-data-row border-bottom border-light">
                                 <span class="ios-data-label">Ward Number</span>
@@ -164,7 +190,6 @@
             <div class="col-lg-8">
                 <div class="premium-glass-card p-0 h-100 d-flex flex-column overflow-hidden">
                     
-                    <!-- Directory Header -->
                     <div class="glass-card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                         <div class="text-start">
                             <h5 class="fw-bold text-dark mb-1" style="font-family: 'Fraunces', serif;"><i class="fas fa-users text-primary me-2"></i> Household Members</h5>
@@ -175,7 +200,6 @@
                         </button>
                     </div>
 
-                    <!-- App-Like Member List -->
                     <div class="p-3 p-md-4 flex-grow-1 bg-white bg-opacity-25">
                         <div class="d-flex flex-column gap-3">
                             
@@ -183,8 +207,6 @@
                             <% if (headOfFamily) { %>
                                 <div class="member-card shadow-sm border-primary border-opacity-25">
                                     <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
-                                        
-                                        <!-- Identity Group -->
                                         <div class="d-flex align-items-center gap-3 flex-grow-1 text-start">
                                             <div class="member-avatar bg-primary text-white shadow-sm">
                                                 <%= headOfFamily.fullName.charAt(0).toUpperCase() %>
@@ -194,22 +216,17 @@
                                                     <span class="fw-bold text-dark fs-6"><%= headOfFamily.fullName %></span>
                                                     <span class="ios-badge-soft bg-warning text-dark border-warning" style="font-size: 0.6rem;">HoF</span>
                                                 </div>
-                                                <span class="text-muted small fw-medium"><i class="fas fa-phone-alt me-1 text-success opacity-75"></i> <%= headOfFamily.mobile %></span>
+                                                <span class="text-muted small fw-medium"><i class="fas fa-phone-alt me-1 text-success opacity-75"></i> <%= maskData(headOfFamily.mobile, headOfFamily.createdBy) %></span>
                                             </div>
                                         </div>
-
-                                        <!-- Demographics & Action -->
                                         <div class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 mt-2 mt-sm-0 pt-2 pt-sm-0 border-top border-sm-0 border-light w-100 w-sm-auto">
                                             <div class="text-start text-sm-end">
                                                 <span class="d-block text-dark fw-bold small"><%= headOfFamily.age %> yrs</span>
                                                 <span class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;"><%= headOfFamily.gender %></span>
                                             </div>
-                                            <div class="blood-pill shadow-sm">
-                                                <%= headOfFamily.bloodGroup || '?' %>
-                                            </div>
+                                            <div class="blood-pill shadow-sm"><%= headOfFamily.bloodGroup || '?' %></div>
                                             <a href="/residents/<%= headOfFamily._id %>" class="btn btn-sm btn-ios-outline rounded-pill px-3 ms-2">View</a>
                                         </div>
-
                                     </div>
                                 </div>
                             <% } %>
@@ -218,8 +235,6 @@
                             <% dependents.forEach(member => { %>
                                 <div class="member-card shadow-sm">
                                     <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
-                                        
-                                        <!-- Identity Group -->
                                         <div class="d-flex align-items-center gap-3 flex-grow-1 text-start">
                                             <div class="member-avatar bg-white text-dark border border-light shadow-sm">
                                                 <%= member.fullName.charAt(0).toUpperCase() %>
@@ -229,22 +244,17 @@
                                                     <span class="fw-bold text-dark fs-6"><%= member.fullName %></span>
                                                     <span class="ios-badge-soft bg-secondary bg-opacity-10 text-secondary border-secondary" style="font-size: 0.6rem;"><%= member.relationship %></span>
                                                 </div>
-                                                <span class="text-muted small fw-medium"><i class="fas fa-phone-alt me-1 text-success opacity-75"></i> <%= member.mobile || 'No Mobile' %></span>
+                                                <span class="text-muted small fw-medium"><i class="fas fa-phone-alt me-1 text-success opacity-75"></i> <%= member.mobile ? maskData(member.mobile, member.createdBy) : 'No Mobile' %></span>
                                             </div>
                                         </div>
-
-                                        <!-- Demographics & Action -->
                                         <div class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 mt-2 mt-sm-0 pt-2 pt-sm-0 border-top border-sm-0 border-light w-100 w-sm-auto">
                                             <div class="text-start text-sm-end">
                                                 <span class="d-block text-dark fw-bold small"><%= member.age %> yrs</span>
                                                 <span class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;"><%= member.gender %></span>
                                             </div>
-                                            <div class="blood-pill shadow-sm">
-                                                <%= member.bloodGroup || '?' %>
-                                            </div>
+                                            <div class="blood-pill shadow-sm"><%= member.bloodGroup || '?' %></div>
                                             <a href="/residents/<%= member._id %>" class="btn btn-sm btn-ios-outline rounded-pill px-3 ms-2">View</a>
                                         </div>
-
                                     </div>
                                 </div>
                             <% }) %>
@@ -256,7 +266,6 @@
                                     <p class="text-muted small mb-0">Use the 'Add Member' button to register individuals.</p>
                                 </div>
                             <% } %>
-
                         </div>
                     </div>
                 </div>
@@ -379,7 +388,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
                 
                 <div class="modal-footer border-top border-light px-4 px-md-5 py-4 bg-white bg-opacity-75">
@@ -432,7 +440,7 @@
     .member-avatar { width: 44px; height: 44px; min-width: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; }
 
     .ios-badge { padding: 0.4rem 1rem; border-radius: 50px; font-weight: 600; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); }
-    .ios-badge-soft { padding: 0.25rem 0.75rem; border-radius: 50px; font-weight: 600; font-size: 0.7rem; border: 1px solid; }
+    .ios-badge-soft { padding: 0.25rem 0.75rem; border-radius: 50px; font-weight: 600; font-size: 0.7rem; border: 1px solid; border-opacity: 0.5; }
     .blood-pill { padding: 0.3rem 0.8rem; border-radius: 8px; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
     .phone-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; border: 1px solid #e2e8f0; padding: 0.5rem 1.25rem; border-radius: 50px; font-weight: 600; color: #0f172a; font-size: 0.95rem; }
 

@@ -9,27 +9,23 @@ require('dotenv').config();
 
 const app = express();
 
-// 1. Trust Proxy (Must be declared before session middleware for Render/HTTPS)
 app.set('trust proxy', 1);
 
-// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
-// 2. Consolidated Session Configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // true on Render (HTTPS), false locally
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax'
     }
 }));
 
-// --- PASSPORT GOOGLE OAUTH CONFIGURATION ---
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -55,11 +51,9 @@ passport.use(new GoogleStrategy({
 },
 async (accessToken, refreshToken, profile, done) => {
     try {
-        // 1. Check if user already logged in with this Google ID before
         let user = await User.findOne({ googleId: profile.id });
         if (user) return done(null, user);
 
-        // 2. If not, create a new Authorized User
         const newUser = new User({
             googleId: profile.id,
             username: profile.displayName,
@@ -73,7 +67,15 @@ async (accessToken, refreshToken, profile, done) => {
         return done(error, false);
     }
 }));
-// ------------------------------------------
+
+// ==========================================
+// GLOBAL RBAC VARIABLE INJECTION (FIXED)
+// ==========================================
+app.use((req, res, next) => {
+    res.locals.currentUser = (req.session && req.session.user) || (req.session && req.session.admin) || null;
+    res.locals.isSuperAdmin = (req.session && req.session.user && req.session.user.role === 'super_admin') || (req.session && req.session.admin !== undefined);
+    next();
+});
 
 // Routes Integration
 app.use('/', require('./routes/indexRoutes'));
@@ -81,7 +83,6 @@ app.use('/admin', require('./routes/adminRoutes'));
 app.use('/families', require('./routes/familyRoutes'));
 app.use('/residents', require('./routes/residentRoutes'));
 
-// DB Connection
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));

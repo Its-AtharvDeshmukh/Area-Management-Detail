@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Family = require('../models/Family');
 const Resident = require('../models/Resident');
+const { sendWelcomeMessage } = require('../utils/notifier'); // SMS Integrator
 
 exports.getAllFamilies = async (req, res) => {
     try {
@@ -23,9 +24,7 @@ exports.getAllFamilies = async (req, res) => {
                 { _id: { $in: familyIds } }
             ];
         }
-        const families = await Family.find(query)
-            .populate('headOfFamily')
-            .sort({ createdAt: -1 });
+        const families = await Family.find(query).populate('headOfFamily').sort({ createdAt: -1 });
         res.render('families/index', { families, search });
     } catch (error) {
         console.error(error);
@@ -36,75 +35,68 @@ exports.getAllFamilies = async (req, res) => {
 exports.renderWizard = (req, res) => {
     const isSuperAdmin = (req.session.user && req.session.user.role === 'super_admin') || req.session.admin !== undefined;
     res.render('families/wizard', { isSuperAdmin, mapToken: process.env.MAP_TOKEN });
-}; // <-- FIXED: Added missing closing bracket
+};
 
+// ROW-LEVEL SECURITY ADDED HERE
 exports.getEditFamily = async (req, res) => {
     try {
         const family = await Family.findById(req.params.id);
         if (!family) return res.status(404).send('Family not found');
+
+        const isSuperAdmin = (req.session.user && req.session.user.role === 'super_admin') || req.session.admin !== undefined;
+        const currentUsername = req.session.user ? req.session.user.username : (req.session.admin ? req.session.admin.username : null);
+
+        // Security Check: Block if not Super Admin AND not the original creator
+        if (!isSuperAdmin && family.createdBy !== currentUsername) {
+            return res.status(403).send("Access Denied: You can only edit family records you created.");
+        }
+
         res.render('families/edit', { family, mapToken: process.env.MAP_TOKEN });
     } catch (error) {
         res.status(500).send("Error loading edit form");
     }
-}; // <-- FIXED: Added missing closing bracket
+};
 
 exports.registerFamilyAndHoF = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
         const payload = req.body;
+        const creator = req.session.user ? req.session.user.username : (req.session.admin ? req.session.admin.username : 'System');
         const count = await Family.countDocuments();
         const familyId = `DN-FAM-${1000 + count + 1}`;
+        
         const newFamily = new Family({
-            familyId,
-            houseNumber: payload.houseNumber,
-            buildingName: payload.buildingName,
-            streetArea: payload.streetArea,
-            landmark: payload.landmark,
-            fullAddress: payload.fullAddress,
-            wardNumber: payload.wardNumber,
-            pinCode: payload.pinCode,
-            location: { lat: payload.lat, lng: payload.lng },
-            remarks: payload.familyRemarks,
-            memberCount: 1 
+            familyId, houseNumber: payload.houseNumber, buildingName: payload.buildingName,
+            streetArea: payload.streetArea, landmark: payload.landmark, fullAddress: payload.fullAddress,
+            wardNumber: payload.wardNumber, pinCode: payload.pinCode, location: { lat: payload.lat, lng: payload.lng },
+            remarks: payload.familyRemarks, memberCount: 1, createdBy: creator
         });
         const savedFamily = await newFamily.save({ session });
+
         const newHoF = new Resident({
-            familyId: savedFamily._id,
-            relationship: 'Head of Family',
-            fullName: payload.fullName,
-            gender: payload.gender,
-            dob: payload.dob,
-            maritalStatus: payload.maritalStatus,
-            mobile: payload.mobile,
-            secondaryMobile: payload.secondaryMobile,
-            whatsappNumber: payload.whatsappNumber,
-            email: payload.email,
-            occupationType: payload.occupationType,
-            occupationOther: payload.occupationOther,
-            education: payload.education,
-            bloodGroup: payload.bloodGroup,
-            hasDisability: payload.hasDisability === 'true',
-            disabilityType: payload.disabilityType,
-            disabilityPercentage: payload.disabilityPercentage,
+            familyId: savedFamily._id, relationship: 'Head of Family', fullName: payload.fullName,
+            gender: payload.gender, dob: payload.dob, maritalStatus: payload.maritalStatus,
+            mobile: payload.mobile, secondaryMobile: payload.secondaryMobile, whatsappNumber: payload.whatsappNumber,
+            email: payload.email, occupationType: payload.occupationType, occupationOther: payload.occupationOther,
+            education: payload.education, bloodGroup: payload.bloodGroup, hasDisability: payload.hasDisability === 'true',
+            disabilityType: payload.disabilityType, disabilityPercentage: payload.disabilityPercentage,
             medicalCondition: payload.medicalCondition,
-            emergencyContact: {
-                name: payload.emergencyName,
-                number: payload.emergencyNumber,
-                relationship: payload.emergencyRelation
-            },
-            isPermanentResident: payload.isPermanentResident === 'true',
-            hasVoterId: payload.hasVoterId === 'true',
-            epicNumber: payload.epicNumber || undefined,
-            rollSerialNumber: payload.rollSerialNumber,
-            boothPartNumber: payload.boothPartNumber,
-            pollingStation: payload.pollingStation
+            emergencyContact: { name: payload.emergencyName, number: payload.emergencyNumber, relationship: payload.emergencyRelation },
+            isPermanentResident: payload.isPermanentResident === 'true', hasVoterId: payload.hasVoterId === 'true',
+            epicNumber: payload.epicNumber || undefined, rollSerialNumber: payload.rollSerialNumber,
+            boothPartNumber: payload.boothPartNumber, pollingStation: payload.pollingStation, createdBy: creator
         });
         if (payload.aadhaarNumber) newHoF.aadhaarNumber = payload.aadhaarNumber;
         if (payload.panNumber) newHoF.panNumber = payload.panNumber;
         await newHoF.save({ session });
+
         await session.commitTransaction();
         session.endSession();
+
+        // 🟢 FIRE AUTOMATED WELCOME MESSAGE
+        sendWelcomeMessage(payload.mobile, payload.fullName, savedFamily.familyId);
+
         res.redirect(`/families/${savedFamily._id}`);
     } catch (error) {
         await session.abortTransaction();
@@ -118,6 +110,7 @@ exports.getFamilyProfile = async (req, res) => {
     try {
         const family = await Family.findById(req.params.id);
         if (!family) return res.status(404).send('Family not found');
+
         const members = await Resident.find({ familyId: family._id }).select('+aadhaarNumber +panNumber'); 
         const headOfFamily = members.find(m => m.relationship === 'Head of Family');
         const dependents = members.filter(m => m.relationship !== 'Head of Family');
@@ -128,10 +121,11 @@ exports.getFamilyProfile = async (req, res) => {
             adults: members.filter(m => m.age >= 16 && m.age <= 59).length,
             seniors: members.filter(m => m.age >= 60).length
         };
+
         const isSuperAdmin = (req.session.user && req.session.user.role === 'super_admin') || req.session.admin !== undefined;
-        res.render('families/profile', { family, headOfFamily, dependents, stats, members, isSuperAdmin });
+        const currentUser = req.session.user || req.session.admin;
+        res.render('families/profile', { family, headOfFamily, dependents, stats, members, isSuperAdmin, currentUser });
     } catch (error) {
-        console.error(error);
         res.status(500).send("Error loading family profile");
     }
 };
@@ -140,55 +134,46 @@ exports.addFamilyMember = async (req, res) => {
     try {
         const familyId = req.params.id;
         const payload = req.body;
+        const creator = req.session.user ? req.session.user.username : (req.session.admin ? req.session.admin.username : 'System');
+
         const newMember = new Resident({
-            familyId: familyId,
-            fullName: payload.fullName,
-            relationship: payload.relationship,
-            gender: payload.gender,
-            dob: payload.dob,
-            maritalStatus: payload.maritalStatus,
-            mobile: payload.mobile,
-            secondaryMobile: payload.secondaryMobile,
-            whatsappNumber: payload.whatsappNumber,
-            email: payload.email,
-            occupationType: payload.occupationType,
-            occupationOther: payload.occupationOther,
-            education: payload.education,
-            bloodGroup: payload.bloodGroup,
-            hasDisability: payload.hasDisability === 'true',
-            disabilityType: payload.disabilityType,
-            medicalCondition: payload.medicalCondition,
-            isPermanentResident: payload.isPermanentResident === 'true',
-            hasVoterId: payload.hasVoterId === 'true',
-            epicNumber: payload.epicNumber || undefined,
-            rollSerialNumber: payload.rollSerialNumber,
-            boothPartNumber: payload.boothPartNumber,
-            pollingStation: payload.pollingStation
+            familyId: familyId, fullName: payload.fullName, relationship: payload.relationship,
+            gender: payload.gender, dob: payload.dob, maritalStatus: payload.maritalStatus,
+            mobile: payload.mobile, secondaryMobile: payload.secondaryMobile, whatsappNumber: payload.whatsappNumber,
+            email: payload.email, occupationType: payload.occupationType, occupationOther: payload.occupationOther,
+            education: payload.education, bloodGroup: payload.bloodGroup, hasDisability: payload.hasDisability === 'true',
+            disabilityType: payload.disabilityType, medicalCondition: payload.medicalCondition,
+            isPermanentResident: payload.isPermanentResident === 'true', hasVoterId: payload.hasVoterId === 'true',
+            epicNumber: payload.epicNumber || undefined, rollSerialNumber: payload.rollSerialNumber,
+            boothPartNumber: payload.boothPartNumber, pollingStation: payload.pollingStation, createdBy: creator
         });
         if (payload.aadhaarNumber) newMember.aadhaarNumber = payload.aadhaarNumber;
         if (payload.panNumber) newMember.panNumber = payload.panNumber;
+
         await newMember.save();
         await Family.findByIdAndUpdate(familyId, { $inc: { memberCount: 1 } });
         res.redirect(`/families/${familyId}`);
     } catch (error) {
-        console.error(error);
         res.status(500).send("Error adding family member: " + error.message);
     }
 };
 
+// ROW-LEVEL SECURITY ADDED HERE
 exports.updateFamily = async (req, res) => {
     try {
+        const family = await Family.findById(req.params.id);
+        const isSuperAdmin = (req.session.user && req.session.user.role === 'super_admin') || req.session.admin !== undefined;
+        const currentUsername = req.session.user ? req.session.user.username : (req.session.admin ? req.session.admin.username : null);
+
+        if (!isSuperAdmin && family.createdBy !== currentUsername) {
+            return res.status(403).send("Access Denied: You can only update family records you created.");
+        }
+
         const payload = req.body;
         const updateData = {
-            houseNumber: payload.houseNumber,
-            buildingName: payload.buildingName,
-            streetArea: payload.streetArea,
-            landmark: payload.landmark,
-            fullAddress: payload.fullAddress,
-            wardNumber: payload.wardNumber,
-            pinCode: payload.pinCode,
-            remarks: payload.remarks,
-            location: { lat: payload.lat, lng: payload.lng }
+            houseNumber: payload.houseNumber, buildingName: payload.buildingName, streetArea: payload.streetArea,
+            landmark: payload.landmark, fullAddress: payload.fullAddress, wardNumber: payload.wardNumber,
+            pinCode: payload.pinCode, remarks: payload.remarks, location: { lat: payload.lat, lng: payload.lng }
         };
         await Family.findByIdAndUpdate(req.params.id, updateData);
         res.redirect(`/families/${req.params.id}`);

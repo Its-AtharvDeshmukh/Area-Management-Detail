@@ -1,0 +1,9 @@
+{
+  "appId": "com.dattamagar.directory",
+  "appName": "Dattaham Nagar",
+  "webDir": "public",
+  "server": {
+    "url": "https://area-management-detail.onrender.com",
+    "cleartext": true
+  }
+}

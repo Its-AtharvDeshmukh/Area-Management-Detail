@@ -52,8 +52,8 @@ const residentSchema = new mongoose.Schema({
         number: String,
         relationship: String
     },
-
-    adminRemarks: { type: String }
+    adminRemarks: { type: String },
+    createdBy: { type: String } // <--- RBAC Privacy tracking field
 }, { timestamps: true });
 
 // Mongoose 9 handles synchronous execution automatically.
@@ -63,6 +63,6 @@ residentSchema.pre('save', function() {
         const ageDate = new Date(ageDifMs);
         this.age = Math.abs(ageDate.getUTCFullYear() - 1970);
     }
-}); // <-- FIXED: Added missing closing bracket and parenthesis
+});
 
 module.exports = mongoose.model('Resident', residentSchema);
