@@ -30,18 +30,21 @@ jobs:
         run: npm install
 
       - name: Create Public Directory Placeholder
+        # Capacitor sync fails if the "webDir" does not exist. 
+        # Since Render serves your frontend dynamically, we create a placeholder for the compiler.
         run: |
           mkdir -p public
           echo "<!DOCTYPE html><html><head><title>App</title></head><body></body></html>" > public/index.html
 
       - name: Sync Capacitor
+        # Copies the capacitor.config.json settings into the native Android folder
         run: npx cap sync android
 
       - name: Build Android APK (Debug)
         working-directory: ./android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
