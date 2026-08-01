@@ -1,4 +1,3 @@
-cat << 'EOF' > server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -9,6 +8,7 @@ const User = require('./models/User');
 require('dotenv').config();
 
 const app = express();
+
 app.set('trust proxy', 1);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -30,7 +30,7 @@ app.use(passport.session());
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
-});
+}); // <-- REPAIRED
 
 passport.deserializeUser(async (id, done) => {
     try {
@@ -39,15 +39,16 @@ passport.deserializeUser(async (id, done) => {
     } catch (err) {
         done(err, null);
     }
-});
+}); // <-- REPAIRED
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.NODE_ENV === 'production' 
-         ? "[https://area-management-detail.onrender.com/auth/google/callback](https://area-management-detail.onrender.com/auth/google/callback)" 
+         ? "https://area-management-detail.onrender.com/auth/google/callback" 
          : "http://localhost:3000/auth/google/callback"
-}, async (accessToken, refreshToken, profile, done) => {
+}, // <-- REPAIRED
+async (accessToken, refreshToken, profile, done) => {
     try {
         let user = await User.findOne({ googleId: profile.id });
         if (user) return done(null, user);
@@ -67,12 +68,16 @@ passport.use(new GoogleStrategy({
     }
 }));
 
+// ==========================================
+// GLOBAL RBAC VARIABLE INJECTION (FIXED)
+// ==========================================
 app.use((req, res, next) => {
     res.locals.currentUser = (req.session && req.session.user) || (req.session && req.session.admin) || null;
     res.locals.isSuperAdmin = (req.session && req.session.user && req.session.user.role === 'super_admin') || (req.session && req.session.admin !== undefined);
     next();
-});
+}); // <-- REPAIRED
 
+// Routes Integration
 app.use('/', require('./routes/indexRoutes'));
 app.use('/admin', require('./routes/adminRoutes'));
 app.use('/families', require('./routes/familyRoutes'));
@@ -85,4 +90,3 @@ mongoose.connect(process.env.MONGO_URI)
 app.listen(process.env.PORT || 3000, () => {
     console.log('Server running on port 3000');
 });
-EOF

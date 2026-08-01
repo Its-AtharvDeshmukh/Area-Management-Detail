@@ -1,4 +1,3 @@
-cat << 'EOF' > package.json
 {
   "name": "dattaham-nagar-directory",
   "version": "1.0.0",
@@ -28,4 +27,3 @@ cat << 'EOF' > package.json
     "twilio": "^6.0.2"
   }
 }
-EOF

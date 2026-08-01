@@ -1,10 +1,9 @@
-cat << 'EOF' > capacitor.config.json
 {
   "appId": "com.dattadham.app",
   "appName": "Dattadam Nagar",
   "webDir": "public",
   "server": {
-    "url": "[https://area-management-detail.onrender.com/](https://area-management-detail.onrender.com/)",
+    "url": "https://area-management-detail.onrender.com/",
     "cleartext": true
   },
   "plugins": {
@@ -14,4 +13,3 @@ cat << 'EOF' > capacitor.config.json
     }
   }
 }
-EOF
