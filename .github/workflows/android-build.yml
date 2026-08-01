@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Android APK Build
 
 on:
   push:
@@ -8,26 +8,46 @@ on:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-    - name: Make gradlew executable
-      run: chmod +x android/gradlew
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    - name: Build Debug APK
-      run: cd android && ./gradlew assembleDebug
+      - name: Install NPM Dependencies
+        run: npm install
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: Area-Management-APK
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Create Public Directory Placeholder
+        # Capacitor sync fails if the "webDir" does not exist. 
+        # Since Render serves your frontend dynamically, we create a placeholder for the compiler.
+        run: |
+          mkdir -p public
+          echo "<!DOCTYPE html><html><head><title>App</title></head><body></body></html>" > public/index.html
+
+      - name: Sync Capacitor
+        # Copies the capacitor.config.json settings into the native Android folder
+        run: npx cap sync android
+
+      - name: Build Android APK (Debug)
+        working-directory: ./android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

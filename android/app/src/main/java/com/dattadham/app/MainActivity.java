@@ -1,4 +1,4 @@
-package Dattadham.app;
+package com.dattadham.app;
 
 import com.getcapacitor.BridgeActivity;
 
