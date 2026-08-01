@@ -1,9 +1,16 @@
 {
-  "appId": "com.dattamagar.directory",
-  "appName": "Dattaham Nagar",
+  "appId": "com.dattadham.app",
+  "appName": "Dattadam Nagar",
   "webDir": "public",
+  "bundledWebRuntime": false,
   "server": {
-    "url": "https://area-management-detail.onrender.com",
+    "url": "https://area-management-detail.onrender.com/",
     "cleartext": true
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK"
+    }
   }
 }
