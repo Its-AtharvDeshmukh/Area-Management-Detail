@@ -4,11 +4,16 @@
   "webDir": "public",
   "server": {
     "url": "https://area-management-detail.onrender.com/",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": ["area-management-detail.onrender.com"]
   },
   "plugins": {
     "StatusBar": {
       "overlaysWebView": true,
+      "style": "DARK"
+    },
+    "NavigationBar": {
+      "backgroundColor": "#0F2A44",
       "style": "DARK"
     }
   }
