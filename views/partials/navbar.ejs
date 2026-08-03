@@ -82,7 +82,7 @@
     }
 
     /* Base Navbar - Frosted glass, fixed top with guaranteed high z-index */
-    .premium-nav {
+    /* .premium-nav {
         min-height: 70px;
         background: var(--nb-glass-bg) !important;
         backdrop-filter: blur(20px) saturate(180%);
@@ -91,7 +91,21 @@
         box-shadow: 0 4px 25px rgba(15,23,42,0.06);
         z-index: 1080 !important;
         transition: all 0.3s ease;
+    } */
+     .premium-nav {
+        min-height: 70px;
+        background: var(--nb-glass-bg) !important;
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid var(--nb-glass-border);
+        box-shadow: 0 4px 25px rgba(15,23,42,0.06);
+        z-index: 1080 !important;
+        transition: all 0.3s ease;
+        /* THE BULLETPROOF SAFE AREA FIX */
+        padding-top: calc(env(safe-area-inset-top) + 5px) !important; 
     }
+
+    
 
     /* Brand Logo */
     .brand-seal {

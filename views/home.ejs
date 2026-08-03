@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Welcome to Dattadam Nagar Family</title>
     
     <!-- Bootstrap 5 CSS -->
@@ -61,14 +61,27 @@
         }
 
         /* Minimalist Transparent Navbar */
-        .minimal-navbar {
+        /* .minimal-navbar {
             position: fixed;
             top: 0; left: 0; width: 100%;
             background: transparent !important;
             z-index: 1080;
             padding: 1.25rem 0;
             transition: background 0.3s ease, backdrop-filter 0.3s ease;
+        } */
+
+        .minimal-navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: transparent !important;
+            z-index: 1080;
+            transition: background 0.3s ease, backdrop-filter 0.3s ease;
+            /* THE BULLETPROOF SAFE AREA FIX */
+            padding-top: calc(env(safe-area-inset-top) + 1.25rem) !important;
+            padding-bottom: 1.25rem;
         }
+
+        
         .minimal-navbar.scrolled {
             background: rgba(3, 7, 18, 0.85) !important;
             backdrop-filter: blur(16px) saturate(160%);
